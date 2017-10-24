@@ -1,9 +1,9 @@
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -13,58 +13,50 @@ import java.util.stream.IntStream;
  */
 public class Tester {
 
-    /* Tunable Parameters */
-    private static final int numInputs = 1;
-    private static final int numOutputs = 1;
-    private static final int numBasisNeurons = 1000;
-    private static final int[] layers = new int[]{numInputs, 10, numOutputs};    // Size of each layer
-    private static final int batchSize = 5;
-    private static final double learningRate = 0.05;
-    private static final double momentum = 0;
-    private static final IActivationFunction activationFunction = new HyperbolicTanFunction();
-    private static final int epochs = 5000;
-
     public static void main(String[] args) {
-        //IFunctionApproximator neuralNetwork = buildNewNetwork(NetworkType.FeedForwardNetwork);
-      //  IFunctionApproximator neuralNetwork = buildNewNetwork(NetworkType.FeedForwardNetwork);
+        INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
+        INeuralNetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
 
-              //  List<Sample> trainingSamples = SampleGenerator.generateSinSamples(100);
+        assert MLP != null;
+        assert trainer != null;
+
+        trainer.train(MLP);
 
         crossValidate();
     }
 
     // Execute a 5x2 cross validation for both networks computing the mean and standard deviation of their errors
     public static void crossValidate() {
-        IFunctionApproximator FFN;
-
-        List<Double> ffnErrors = new ArrayList<>();
-        List<Double> rbfErrors = new ArrayList<>();
-
-        for (int k = 0; k < 5; k++) {
-            Collections.shuffle(dataSet);
-            List<Sample> set1 = dataSet.subList(0, (dataSet.size() / 2));
-            List<Sample> set2 = dataSet.subList((dataSet.size() / 2), dataSet.size());
-
-            FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
-       //     RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
-
-            ffnErrors.addAll(computeFold(set1, set2, FFN));
-     //       rbfErrors.addAll(computeFold(set1, set2, RBN));
-
-            FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
-         //   RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
-
-            ffnErrors.addAll(computeFold(set2, set1, FFN));
-         //   rbfErrors.addAll(computeFold(set2, set1, RBN));
-        }
-
-        double mean = calcMean(ffnErrors);
-        double SD = calcStandardDeviation(mean, ffnErrors);
-        printStats(mean, SD, "Feed Forward");
-
-        mean = calcMean(rbfErrors);
-        SD = calcStandardDeviation(mean, rbfErrors);
-        printStats(mean, SD, "Radial Basis");
+//        IFunctionApproximator FFN;
+//
+//        List<Double> ffnErrors = new ArrayList<>();
+//        List<Double> rbfErrors = new ArrayList<>();
+//
+//        for (int k = 0; k < 5; k++) {
+//            Collections.shuffle(dataSet);
+//            List<Sample> set1 = dataSet.subList(0, (dataSet.size() / 2));
+//            List<Sample> set2 = dataSet.subList((dataSet.size() / 2), dataSet.size());
+//
+//            FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
+//       //     RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
+//
+//            ffnErrors.addAll(computeFold(set1, set2, FFN));
+//     //       rbfErrors.addAll(computeFold(set1, set2, RBN));
+//
+//            FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
+//         //   RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
+//
+//            ffnErrors.addAll(computeFold(set2, set1, FFN));
+//         //   rbfErrors.addAll(computeFold(set2, set1, RBN));
+//        }
+//
+//        double mean = calcMean(ffnErrors);
+//        double SD = calcStandardDeviation(mean, ffnErrors);
+//        printStats(mean, SD, "Feed Forward");
+//
+//        mean = calcMean(rbfErrors);
+//        SD = calcStandardDeviation(mean, rbfErrors);
+//        printStats(mean, SD, "Radial Basis");
     }
 
     private static List<Double> computeFold(List<Sample> trainSet, List<Sample> testSet, IFunctionApproximator network) {
@@ -120,21 +112,6 @@ public class Tester {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-    }
-
-
-    // Construct a new network of the requested type
-    private static IFunctionApproximator buildNewNetwork(NetworkType type) {
-        if (type == NetworkType.FeedForwardNetwork) {
-            return new FeedForwardNetwork(layers, learningRate, batchSize, momentum, activationFunction, epochs);
-        } else {
-            return new RadialBasisNetwork(numInputs, numOutputs, numBasisNeurons, learningRate, batchSize, epochs);
-        }
-    }
-
-    protected enum NetworkType {
-        FeedForwardNetwork,
-        RadialBasisNetwork
     }
 }
 
