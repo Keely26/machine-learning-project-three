@@ -20,7 +20,7 @@ public class Tester {
         assert MLP != null;
         assert trainer != null;
 
-        trainer.train(MLP);
+        trainer.train(MLP, null);
 
         crossValidate();
     }
@@ -108,7 +108,7 @@ public class Tester {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputPath))) {
             writer.write(lines.stream()
                     .reduce((sum, currLine) -> sum + "\n" + currLine)
-                    .orElseGet(null));
+                    .orElse(""));
         } catch (IOException ex) {
             ex.printStackTrace();
         }

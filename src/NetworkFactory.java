@@ -12,7 +12,7 @@ public class NetworkFactory {
     public static INeuralNetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
         switch (type) {
             case BPNetworkTrainer:
-                return new BPNetworkTrainer();
+                return new BPNetworkTrainer(learningRate, momentum, batchSize, epochs);
             case DENetworkTrainer:
                 return new DENetworkTrainer();
             case ESNetworkTrainer:
