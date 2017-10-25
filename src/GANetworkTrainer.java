@@ -1,7 +1,13 @@
-public class GANetworkTrainer implements INeuralNetworkTrainer {
+import java.util.List;
+
+public class GANetworkTrainer extends NetworkTrainerBase {
+
+    GANetworkTrainer() {
+
+    }
 
     @Override
-    public INeuralNetwork train(INeuralNetwork network) {
-        return null;
+    public INeuralNetwork train(INeuralNetwork network, List<Sample> samples) {
+        return network;
     }
 }

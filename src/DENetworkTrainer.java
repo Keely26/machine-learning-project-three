@@ -1,8 +1,13 @@
+import java.util.List;
 
-public class DENetworkTrainer implements INeuralNetworkTrainer {
+public class DENetworkTrainer extends NetworkTrainerBase {
+
+    DENetworkTrainer() {
+
+    }
 
     @Override
-    public INeuralNetwork train(INeuralNetwork network) {
-        return null;
+    public INeuralNetwork train(INeuralNetwork network, List<Sample> samples) {
+        return network;
     }
 }
