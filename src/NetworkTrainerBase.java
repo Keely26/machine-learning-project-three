@@ -1,7 +1,7 @@
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
-public class NetworkTrainerBase implements INeuralNetworkTrainer {
+public class NetworkTrainerBase implements INetworkTrainer {
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, List<Sample> samples) {

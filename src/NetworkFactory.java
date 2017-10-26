@@ -9,7 +9,7 @@ public class NetworkFactory {
     private static final IActivationFunction activationFunction = new HyperbolicTanFunction();
     private static final int epochs = 5000;
 
-    public static INeuralNetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
+    public static INetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
         switch (type) {
             case BPNetworkTrainer:
                 return new BPNetworkTrainer(learningRate, momentum, batchSize, epochs);

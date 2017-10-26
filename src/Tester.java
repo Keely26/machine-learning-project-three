@@ -15,7 +15,7 @@ public class Tester {
 
     public static void main(String[] args) {
         INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
-        INeuralNetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
+        INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
 
         assert MLP != null;
         assert trainer != null;
@@ -59,17 +59,17 @@ public class Tester {
 //        printStats(mean, SD, "Radial Basis");
     }
 
-    private static List<Double> computeFold(List<Sample> trainSet, List<Sample> testSet, IFunctionApproximator network) {
-        network.train(trainSet);
+    private static List<Double> computeFold(List<Sample> trainSet, List<Sample> testSet, INeuralNetwork network, INetworkTrainer trainer) {
+        trainer.train(network, trainSet);
         return getApproximationErrors(testSet, network);
     }
 
     // Iterates through testing set and calculates the approximated values and the error of the samples of the supplied network
-    private static List<Double> getApproximationErrors(List<Sample> testSet, IFunctionApproximator network) {
+    private static List<Double> getApproximationErrors(List<Sample> testSet, INeuralNetwork network) {
         List<Double> totalError = new ArrayList<>(testSet.size());
         for (Sample sample : testSet) {
             // Get the network's approximation
-            double[] networkOutput = network.approximate(sample.inputs);
+            double[] networkOutput = network.execute(sample.inputs);
 
             // Add the error for each sample to the total error
             totalError.add(IntStream
