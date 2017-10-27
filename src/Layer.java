@@ -10,9 +10,11 @@ public class Layer {
 
     public final int size;
     private List<Neuron> neurons;
+    private final int connections;
 
     public Layer(int size, int connections, IActivationFunction activationFunction) {
         this.size = size;
+        this.connections = connections;
         this.initializeNeurons(connections, activationFunction);
     }
 

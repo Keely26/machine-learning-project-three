@@ -68,6 +68,10 @@ public class Neuron {
         return this.weights.get(index);
     }
 
+    public List<Double> getWeights() {
+        return this.weights;
+    }
+
     public double getOutput() {
         return this.activation;
     }
@@ -93,33 +97,5 @@ public class Neuron {
 
     public double getPreviousWeight(int index) {
         return this.previousWeights.get(index);
-    }
-
-    public double[] getMean() {
-        return mean;
-    }
-
-    public void setMean(double[] mean) {
-        this.mean = mean;
-    }
-
-    public double[] getInputs() {
-        return inputs;
-    }
-
-    public double getInput(int index) {
-        return this.inputs[index];
-    }
-
-    public void setInputs(double[] inputs) {
-        this.inputs = inputs;
-    }
-
-    public double[] getOutputs() {
-        return outputs;
-    }
-
-    public void setOutputs(double[] outputs) {
-        this.outputs = outputs;
     }
 }

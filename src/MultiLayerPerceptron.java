@@ -27,10 +27,17 @@ public class MultiLayerPerceptron implements INeuralNetwork {
         return this.layers.get(index);
     }
 
+    @Override
+    public WeightMatrix constructWeightMatrix() {
+        return new WeightMatrix(this);
+    }
+
+    @Override
     public int getSize() {
         return this.layers.size();
     }
 
+    @Override
     public double computeActivation(double input) {
         return this.activationFunction.compute(input);
     }
