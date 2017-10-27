@@ -6,7 +6,7 @@ public class NetworkFactory {
     private static final int batchSize = 5;
     private static final double learningRate = 0.05;
     private static final double momentum = 0;
-    private static final IActivationFunction activationFunction = new HyperbolicTanFunction();
+    private static final IActivationFunction activationFunction = new HyperbolicTangent();
     private static final int epochs = 5000;
 
     public static INetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {

@@ -1,0 +1,14 @@
+Zach
+------
+Framework
+Backprop
+Evolutionary Strategy
+
+Keely
+------
+Genetic Algorithm
+Testing
+
+Karen
+------
+Differential Evolution

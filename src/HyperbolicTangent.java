@@ -1,4 +1,4 @@
-public class HyperbolicTanFunction implements IActivationFunction {
+public class HyperbolicTangent implements IActivationFunction {
 
     @Override
     public double compute(double value) {
