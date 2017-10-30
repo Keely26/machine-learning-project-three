@@ -1,6 +1,9 @@
 import java.util.List;
 
 public class GANetworkTrainer extends NetworkTrainerBase {
+    private double crossoverRate;
+    private double mutationRate;
+    private int rank;
 
     GANetworkTrainer() {
 
@@ -12,8 +15,8 @@ public class GANetworkTrainer extends NetworkTrainerBase {
         //initialize population
         //fitness function
         //while not converge
-            // select parent
-            //apply cross over
+            //select parent --> rank based selection
+            //apply crossover
             //apply mutation
             //evaluate fitness of mutation result
             //replace child into population
@@ -36,4 +39,7 @@ public class GANetworkTrainer extends NetworkTrainerBase {
 
         }
     }
+    private void rank() {
+    }
 }
+
