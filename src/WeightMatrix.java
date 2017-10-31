@@ -3,6 +3,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("WeakerAccess")
 public class WeightMatrix {
 
     private List<Double> weights;
@@ -32,10 +33,23 @@ public class WeightMatrix {
 
     public INeuralNetwork buildNetwork() {
         for (int i = 0; i < networkSize; i++) {
-
+            List<Neuron> currentLayer = network.getLayer(i).getNeurons();
+            for (int j = 0; j < currentLayer.size(); j++) {
+                List<Double> currentWeights = this.getModifiedWeights(i, j);
+                currentLayer.get(i).setWeights(currentWeights);
+            }
         }
 
         return this.network;
+    }
+
+    private List<Double> getModifiedWeights(int layer, int neuron) {
+        int startIndex = 0;
+        int endIndex = 9999;
+
+        // TODO: Figure out how to compute indices
+        // Should be sum of pairwise products of layer dimensions preceding layer, maybe?
+        return this.weights.subList(startIndex, endIndex);
     }
 
     public List<Double> getWeights() {

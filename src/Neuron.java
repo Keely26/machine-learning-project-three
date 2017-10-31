@@ -6,6 +6,7 @@ import java.util.Random;
  * Neuron class stores values weights and activations of a single neuron in the network and provides functionality
  * to compute the output of the that neuron. Supports use cases for both RBF and MLP
  */
+@SuppressWarnings("WeakerAccess")
 public class Neuron {
 
     public final int size;
@@ -16,10 +17,6 @@ public class Neuron {
     private double delta;
     private double bias;
 
-    private double[] inputs;
-    private double[] outputs;
-    private double[] mean;
-
     private IActivationFunction activationFunction;
 
     // Feed forward network constructor
@@ -27,12 +24,6 @@ public class Neuron {
         this.size = connections;
         this.activationFunction = activationFunction;
         this.initializeWeights(true);
-    }
-
-    // Radial basis network constructor
-    public Neuron(int connections, boolean randomizeWeights) {
-        this.size = connections;
-        this.initializeWeights(randomizeWeights);
     }
 
     // Set up connection weights, set to random value between [-0.5, 0.5] or all 1 depending on flag
@@ -72,6 +63,10 @@ public class Neuron {
         return this.weights;
     }
 
+    public void setWeights(List<Double> weights) {
+        this.weights = weights;
+    }
+
     public double getOutput() {
         return this.activation;
     }
@@ -88,7 +83,7 @@ public class Neuron {
         this.bias += increment;
     }
 
-    // Set the previous weight as the current weight and increment the current weight by the suppied value
+    // Set the previous weight as the current weight and increment the current weight by the supplied value
     public void updateWeight(int index, double increment) {
         double previousWeight = this.weights.get(index);
         this.previousWeights.set(index, previousWeight);
