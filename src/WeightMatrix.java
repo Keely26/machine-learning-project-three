@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class WeightMatrix {
@@ -31,9 +30,9 @@ public class WeightMatrix {
     }
 
 
-    public INeuralNetwork buildNetwork(Optional<List<Double>> weightMatrix) {
-        for (int i = 0; i < networkSize ; i++) {
-            Layer
+    public INeuralNetwork buildNetwork() {
+        for (int i = 0; i < networkSize; i++) {
+
         }
 
         return this.network;

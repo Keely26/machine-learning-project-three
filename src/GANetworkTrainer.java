@@ -26,16 +26,16 @@ public class GANetworkTrainer extends NetworkTrainerBase {
         return network;
     }
 
-    private void crossover(parent1, parent2) {
+    private void crossover(WeightMatrix parent1, WeightMatrix parent2) {
     }
 
-    private void mutation(parent) {
+    private void mutation(WeightMatrix parent) {
     }
 
-    private void fitnessFunction(population[]) {
+    private void fitnessFunction(WeightMatrix[] population) {
         int fitness = 0;
 
-        for(int i = 0; i < population.size(); i++) {
+        for(int i = 0; i < population.length; i++) {
 
         }
     }
