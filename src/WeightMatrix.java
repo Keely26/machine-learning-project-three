@@ -2,25 +2,29 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @SuppressWarnings("WeakerAccess")
 public class WeightMatrix {
 
     private List<Double> weights;
-    private List<Integer> dimmensions;
+    private List<Integer> dimensions;
 
     private INeuralNetwork network;
     private final int networkSize;
+    private final int numInputs;
 
 
     public WeightMatrix(INeuralNetwork network) {
         this.network = network;
         this.networkSize = network.getSize();
+        this.numInputs = network.getLayer(0).getNeuron(0).size;
         this.weights = new ArrayList<>();
+        this.dimensions = new ArrayList<>();
 
         for (int i = 0; i < networkSize; i++) {
             Layer layer = network.getLayer(i);
-            this.dimmensions.add(layer.size);
+            this.dimensions.add(layer.size);
             this.weights.addAll(layer.getNeurons()
                     .stream()
                     .map(Neuron::getWeights)
@@ -44,11 +48,23 @@ public class WeightMatrix {
     }
 
     private List<Double> getModifiedWeights(int layer, int neuron) {
-        int startIndex = 0;
-        int endIndex = 9999;
+        int startIndex, endIndex;
 
-        // TODO: Figure out how to compute indices
-        // Should be sum of pairwise products of layer dimensions preceding layer, maybe?
+        // Accumulate layer index offset
+        startIndex = IntStream
+                .range(0, layer)
+                .map(i -> i == 0 ? numInputs * dimensions.get(0) : dimensions.get(i - 1) * dimensions.get(i))
+                .sum();
+
+        // Accumulate neuron index offset, set end index
+        if (layer == 0) {
+            startIndex += neuron * numInputs;
+            endIndex = startIndex + numInputs;
+        } else {
+            startIndex += neuron * this.dimensions.get(layer);
+            endIndex = startIndex + this.dimensions.get(layer);
+        }
+
         return this.weights.subList(startIndex, endIndex);
     }
 

@@ -2,7 +2,7 @@
 public class NetworkFactory {
 
     /* Tunable Parameters */
-    private static final int[] layers = new int[]{1, 10, 1};    // Size of each layer
+    private static final int[] layers = new int[]{2, 3, 2};    // Size of each layer
     private static final int batchSize = 5;
     private static final double learningRate = 0.05;
     private static final double momentum = 0;
