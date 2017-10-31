@@ -87,7 +87,7 @@ public class Neuron {
     public void updateWeight(int index, double increment) {
         double previousWeight = this.weights.get(index);
         this.previousWeights.set(index, previousWeight);
-        this.weights.set(index, previousWeight + increment);
+        this.weights.set(index, previousWeight - increment);
     }
 
     public double getPreviousWeight(int index) {

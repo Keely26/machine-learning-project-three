@@ -16,7 +16,7 @@ public class NetworkFactory {
             case DENetworkTrainer:
                 return new DENetworkTrainer();
             case ESNetworkTrainer:
-                return new ESNetworkTrainer();
+                return new ESNetworkTrainer(100, 10);
             case GANetworkTrainer:
                 return new GANetworkTrainer();
             default:

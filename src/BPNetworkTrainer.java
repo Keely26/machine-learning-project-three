@@ -34,7 +34,7 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
                     this.resetWeightDeltas(network);
                 }
                 // Sum the total error for each iteration
-                epochError += this.calculateTotalError(sample.outputs, networkOutputs);
+                epochError += this.meanSquaredError(sample.outputs, networkOutputs);
             }
             System.out.println("Epoch: " + i + "\t\tError: " + epochError / samples.size());
         }
