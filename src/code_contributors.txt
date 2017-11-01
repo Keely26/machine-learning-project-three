@@ -1,0 +1,6 @@
+Backprop - zach
+Genetic Algorithm - keely
+evolution strategy - zach
+differential evolution - karen
+
+others?:
