@@ -29,8 +29,7 @@ public class WeightMatrix {
                     .stream()
                     .map(Neuron::getWeights)
                     .flatMap(Collection::stream)
-                    .collect(Collectors.toList())
-            );
+                    .collect(Collectors.toList()));
         }
     }
 

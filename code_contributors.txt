@@ -2,7 +2,7 @@ Zach
 ------
 Framework
 Backprop
-Evolutionary Strategy
+Data Converter
 
 Keely
 ------
@@ -12,3 +12,4 @@ Testing
 Karen
 ------
 Differential Evolution
+Evolutionary Strategy
