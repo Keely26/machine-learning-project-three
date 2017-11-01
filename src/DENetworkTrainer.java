@@ -40,7 +40,7 @@ public class DENetworkTrainer extends NetworkTrainerBase {
     }
 
     public void fitness(){
-        s
+
     }
 
 }
