@@ -4,10 +4,12 @@ import java.util.List;
 public class MultiLayerPerceptron implements INeuralNetwork {
 
     private List<Layer> layers;
-    private IActivationFunction activationFunction;
+    private final IActivationFunction activationFunction;
+    private final int inputs;
 
     MultiLayerPerceptron(IActivationFunction activationFunction, int[] networkDimensions) {
         this.activationFunction = activationFunction;
+        this.inputs = networkDimensions[0];
         this.initializeNetwork(networkDimensions);
     }
 

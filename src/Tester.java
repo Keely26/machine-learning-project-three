@@ -20,6 +20,9 @@ public class Tester {
         assert MLP != null;
         assert trainer != null;
 
+        WeightMatrix matrix = new WeightMatrix(MLP);
+        INeuralNetwork network = matrix.buildNetwork();
+
         trainer.train(MLP, null);
 
         crossValidate();

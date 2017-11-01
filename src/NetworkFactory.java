@@ -2,11 +2,11 @@
 public class NetworkFactory {
 
     /* Tunable Parameters */
-    private static final int[] layers = new int[]{1, 10, 1};    // Size of each layer
+    private static final int[] layers = new int[]{2, 3, 2};    // Size of each layer
     private static final int batchSize = 5;
     private static final double learningRate = 0.05;
     private static final double momentum = 0;
-    private static final IActivationFunction activationFunction = new HyperbolicTanFunction();
+    private static final IActivationFunction activationFunction = new HyperbolicTangent();
     private static final int epochs = 5000;
 
     public static INetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
@@ -16,7 +16,7 @@ public class NetworkFactory {
             case DENetworkTrainer:
                 return new DENetworkTrainer();
             case ESNetworkTrainer:
-                return new ESNetworkTrainer();
+                return new ESNetworkTrainer(100, 10);
             case GANetworkTrainer:
                 return new GANetworkTrainer();
             default:
