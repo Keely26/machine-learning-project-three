@@ -16,7 +16,7 @@ public class NetworkTrainerBase implements INetworkTrainer {
     }
 
     // Compute the normalized squared error between a set of outputs and their true values
-    protected double meanSquaredError(double[] networkOutputs, double[] expectedOutputs) {
+    protected double calcFitness(double[] networkOutputs, double[] expectedOutputs) {
         assert networkOutputs.length == expectedOutputs.length;
 
         // Calculate the sum over the squared error for each output value
