@@ -14,7 +14,7 @@ public class NetworkFactory {
             case BPNetworkTrainer:
                 return new BPNetworkTrainer(learningRate, momentum, batchSize, epochs);
             case DENetworkTrainer:
-                return new DENetworkTrainer();
+                return new DENetworkTrainer(100);
             case ESNetworkTrainer:
                 return new ESNetworkTrainer(100, 10);
             case GANetworkTrainer:

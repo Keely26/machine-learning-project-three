@@ -28,7 +28,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
     public WeightMatrix mutate(WeightMatrix individual){
         // probabilistically mutate using stored probabilities
-        for( int i = 0; i < individual.length; i++) {
+        for( int i = 0; i < 10; i++) {
 
             if(new Random().nextInt(1000) == 0){
                 // mutate individual[i]
@@ -37,12 +37,12 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         return individual;
     }
 
-    public WeightMatrix crossOver( WeightMatrix parent1, WeightMatrix[] parents){
+    public List<Double> crossOver( WeightMatrix parent1, WeightMatrix[] parents){
         // uniform cross over
-        WeightMatrix child;
+        List<Double> child = parent1.getWeights();
         for( int i = 0; i < parent1.getWeights().size(); i++) {
 
-            if(new Random().nextInt(10) == 0){
+            if(!(new Random().nextInt(10) == 0)){
                 // cross @ i
             }
         }
