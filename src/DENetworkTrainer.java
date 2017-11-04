@@ -117,10 +117,10 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         return child;
     }
 
-    public List<Double> fitness(List<Double> population){
+    public List<Double> fitness(List<Double> population) {
         // for each WM in  list create the FFN
         List<Double> fit = new ArrayList<Double>();
-        for(int i = 0; i < population.size(); i++){
+        for (int i = 0; i < population.size(); i++) {
 
         }
         //get expected outputs
@@ -128,6 +128,10 @@ public class DENetworkTrainer extends NetworkTrainerBase {
 
         // call meanSquaredError(networkOut, ExpectedOUt)
         return fit;
+    }
+    public void fitness(){
+
+
     }
 
 }

@@ -7,13 +7,15 @@ import java.util.stream.IntStream;
 @SuppressWarnings("WeakerAccess")
 public class WeightMatrix {
 
+
     private List<Double> weights;
     private List<Integer> dimensions;
+
     private double fitness;
     private INeuralNetwork network;
+
     private final int networkSize;
     private final int numInputs;
-
 
     public WeightMatrix(INeuralNetwork network) {
         this.network = network;
@@ -25,14 +27,14 @@ public class WeightMatrix {
         for (int i = 0; i < networkSize; i++) {
             Layer layer = network.getLayer(i);
             this.dimensions.add(layer.size);
-            this.weights.addAll(layer.getNeurons()
+            this.weights.addAll(layer
+                    .getNeurons()
                     .stream()
                     .map(Neuron::getWeights)
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList()));
         }
     }
-
 
     public INeuralNetwork buildNetwork() {
         for (int i = 0; i < networkSize; i++) {
@@ -72,9 +74,7 @@ public class WeightMatrix {
     }
 
     public void setWeights(List<Double> weights) {
-        if (weights.size() != this.weights.size()) {
-            throw new IllegalArgumentException("Invalid weight matrix");
-        }
+        assert weights.size() == this.weights.size() : "Invalid weight matrix";
 
         this.weights = weights;
     }
