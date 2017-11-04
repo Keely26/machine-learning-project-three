@@ -1,3 +1,4 @@
+//import java.lang.reflect.Array;
 import java.util.*;
 
 public class DENetworkTrainer extends NetworkTrainerBase {
@@ -58,13 +59,25 @@ public class DENetworkTrainer extends NetworkTrainerBase {
                 // create new weightmatrix using network; set weights from cross; add to offspring lists
                 offspring.add(createIndividual(network, childWeights));
 
-                // for each individual evaluate fitness
-                // keep only top #pop offspring
-                    //while list.size > popSize
-                        // find min of list and .remove
 
                 //create new population from size pop top offspring
                 numOff++;
+
+            } // end while
+
+            // for each individual evaluate fitness
+            fitness(offspring, samples);
+            // keep only top #pop offspring
+            while (offspring.size() > popSize) {
+                // find min of list and .remove
+                int minIndex = 0;
+
+                for(int i = 0; i < offspring.size(); i++){
+                    if(offspring.get(i).getFitness() < offspring.get(minIndex).getFitness()){
+                        minIndex = i;
+                    }
+                }
+                offspring.remove(minIndex);
             }
         }
         return network;
@@ -117,20 +130,25 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         return child;
     }
 
-    public List<Double> fitness(List<Double> population) {
+    public void fitness(List<WeightMatrix> population, List<Sample> samples) {
+
         // for each WM in  list create the FFN
-        List<Double> fit = new ArrayList<Double>();
+        List<INeuralNetwork> FFNPop =  new ArrayList<INeuralNetwork>();
+        List<double[]> networkOuts = new ArrayList<double[]>();
+
         for (int i = 0; i < population.size(); i++) {
+            //for each i create a new FFN and save to FFNPop
+            FFNPop.add(i, deserializeNetwork(population.get(i)));
 
+            //compute network outputs
+            for(int j = 0; j < samples.size(); j++) {
+                networkOuts.add(i, execute((FFNPop.get(i)), samples.get(j).inputs));
+            }
         }
-        //get expected outputs
-        // compute the output and save to a list
-
-        // call meanSquaredError(networkOut, ExpectedOUt)
-        return fit;
-    }
-    public void fitness(){
-
+        // update fitness for each WeightMatrix
+        for(int i = 0; i < FFNPop.size(); i++){
+            population.get(i).setFitness(meanSquaredError(networkOuts.get(i), samples.get(i).outputs));
+        }
 
     }
 
