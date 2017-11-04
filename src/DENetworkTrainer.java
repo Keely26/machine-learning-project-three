@@ -60,7 +60,9 @@ public class DENetworkTrainer extends NetworkTrainerBase {
 
                 // for each individual evaluate fitness
                 // keep only top #pop offspring
-                //sort list of offspring low - high
+                    //while list.size > popSize
+                        // find min of list and .remove
+
                 //create new population from size pop top offspring
                 numOff++;
             }
@@ -115,9 +117,17 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         return child;
     }
 
-    public double fitness(){
-        // call meanSquaredError
-        return 0.0;
+    public List<Double> fitness(List<Double> population){
+        // for each WM in  list create the FFN
+        List<Double> fit = new ArrayList<Double>();
+        for(int i = 0; i < population.size(); i++){
+
+        }
+        //get expected outputs
+        // compute the output and save to a list
+
+        // call meanSquaredError(networkOut, ExpectedOUt)
+        return fit;
     }
 
 }

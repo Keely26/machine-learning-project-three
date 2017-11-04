@@ -9,7 +9,7 @@ public class WeightMatrix {
 
     private List<Double> weights;
     private List<Integer> dimensions;
-
+    private double fitness;
     private INeuralNetwork network;
     private final int networkSize;
     private final int numInputs;
@@ -77,5 +77,13 @@ public class WeightMatrix {
         }
 
         this.weights = weights;
+    }
+
+    public double getFitness(){
+        return this.fitness;
+    }
+
+    public void setFitness(double fitness){
+        this.fitness = fitness;
     }
 }
