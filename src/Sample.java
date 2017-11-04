@@ -1,30 +1,26 @@
-import java.util.Random;
-
 /**
  * Sample class acts as a container to hold a set of inputs and their corresponding outputs
  * for the function being analyzed
  */
 public class Sample {
-    public double[] inputs;
-    public double[] outputs;
-
-    public Sample(int numInputs) {
-        this.inputs = new double[numInputs];
-        this.outputs = new double[1];
-    }
+    public final double[] inputs;
+    public final double[] outputs;
 
     public Sample(double[] inputs, double[] outputs) {
         this.inputs = inputs;
         this.outputs = outputs;
     }
 
-    public Sample(int numInputs, int maxInputVal, int numOutputs) {
-        this.inputs = new double[numInputs];
-        this.outputs = new double[numOutputs];
+    public Sample(String[] inputs, String[] outputs) {
+        this.inputs = new double[inputs.length];
+        this.outputs = new double[outputs.length];
 
-        Random random = new Random();
-        for (int i = 0; i < numInputs; i++) {
-            inputs[i] = random.nextDouble() * maxInputVal;
+        for (int i = 0; i < inputs.length; i++) {
+            this.inputs[i] = Double.parseDouble(inputs[i]);
+        }
+
+        for (int i = 0; i < outputs.length; i++) {
+            this.outputs[i] = Double.parseDouble(outputs[i]);
         }
     }
 }

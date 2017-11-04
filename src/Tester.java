@@ -16,50 +16,48 @@ public class Tester {
     public static void main(String[] args) {
         INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
         INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
+        Dataset dataSet = DataSetFactory.buildDataSet("ecoli");
 
         assert MLP != null;
         assert trainer != null;
+        assert dataSet != null;
 
-        WeightMatrix matrix = new WeightMatrix(MLP);
-        INeuralNetwork network = matrix.buildNetwork();
+        trainer.train(MLP, dataSet);
 
-        trainer.train(MLP, null);
-
-        crossValidate();
+     //   crossValidate();
     }
 
     // Execute a 5x2 cross validation for both networks computing the mean and standard deviation of their errors
-    public static void crossValidate() {
-//        IFunctionApproximator FFN;
-//
-//        List<Double> ffnErrors = new ArrayList<>();
-//        List<Double> rbfErrors = new ArrayList<>();
-//
-//        for (int k = 0; k < 5; k++) {
-//            Collections.shuffle(dataSet);
-//            List<Sample> set1 = dataSet.subList(0, (dataSet.size() / 2));
-//            List<Sample> set2 = dataSet.subList((dataSet.size() / 2), dataSet.size());
-//
-//            FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
-//       //     RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
-//
-//            ffnErrors.addAll(computeFold(set1, set2, FFN));
-//     //       rbfErrors.addAll(computeFold(set1, set2, RBN));
-//
-//            FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
-//         //   RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
-//
-//            ffnErrors.addAll(computeFold(set2, set1, FFN));
-//         //   rbfErrors.addAll(computeFold(set2, set1, RBN));
-//        }
-//
-//        double mean = calcMean(ffnErrors);
-//        double SD = calcStandardDeviation(mean, ffnErrors);
-//        printStats(mean, SD, "Feed Forward");
-//
-//        mean = calcMean(rbfErrors);
-//        SD = calcStandardDeviation(mean, rbfErrors);
-//        printStats(mean, SD, "Radial Basis");
+    public static void crossValidate(List<INetworkTrainer> trainers, Dataset dataset, INeuralNetwork network) {
+
+
+        List<Double> ffnErrors = new ArrayList<>();
+
+        for (int k = 0; k < 5; k++) {
+            dataset.shuffle();
+            List<Sample> set1 = dataset.subList(0, (dataset.size() / 2));
+            List<Sample> set2 = dataset.subList((dataset.size() / 2), dataset.size());
+
+        //    FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
+       //     RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
+
+        //    ffnErrors.addAll(computeFold(set1, set2, FFN));
+     //       rbfErrors.addAll(computeFold(set1, set2, RBN));
+
+         //   FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
+         //   RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
+
+          //  ffnErrors.addAll(computeFold(set2, set1, FFN));
+         //   rbfErrors.addAll(computeFold(set2, set1, RBN));
+        }
+
+        double mean = calcMean(ffnErrors);
+        double SD = calcStandardDeviation(mean, ffnErrors);
+        printStats(mean, SD, "Feed Forward");
+
+      //  mean = calcMean(rbfErrors);
+       // SD = calcStandardDeviation(mean, rbfErrors);
+        printStats(mean, SD, "Radial Basis");
     }
 
     private static List<Double> computeFold(List<Sample> trainSet, List<Sample> testSet, INeuralNetwork network, INetworkTrainer trainer) {
