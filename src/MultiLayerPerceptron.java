@@ -14,12 +14,12 @@ public class MultiLayerPerceptron implements INeuralNetwork {
     }
 
     public double[] execute(double[] inputs) {
-        if (inputs.length != this.layers.get(0).size) {
+        if (inputs.length != this.layers.get(0).getNeuron(0).getWeights().size()) {
             throw new IllegalArgumentException("Input/Network size mismatch!");
         }
 
-        for (Layer layer : this.layers) {
-            inputs = layer.execute(inputs, true);
+        for (int i = 0; i < this.layers.size(); i++) {
+            inputs = layers.get(i).execute(inputs, i != this.layers.size() - 1);
         }
 
         return inputs;

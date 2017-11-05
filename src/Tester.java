@@ -16,7 +16,7 @@ public class Tester {
     public static void main(String[] args) {
         INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
         INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
-        Dataset dataSet = DataSetFactory.buildDataSet("ecoli");
+        Dataset dataSet = DatasetFactory.buildDataSet("tic-tac-toe");
 
         assert MLP != null;
         assert trainer != null;
@@ -35,7 +35,9 @@ public class Tester {
 
         for (int k = 0; k < 5; k++) {
             dataset.shuffle();
-            List<Sample> set1 = dataset.subList(0, (dataset.size() / 2));
+            Dataset testSet = dataset.getTestingSet();
+            Dataset trainSet = dataset.getTrainingSet();
+
             List<Sample> set2 = dataset.subList((dataset.size() / 2), dataset.size());
 
         //    FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
