@@ -1,170 +1,136 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java. util.Random;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ESNetworkTrainer extends NetworkTrainerBase {
 
     private final int populationSize;
+    private final int numParents;
     private final int numOffspring;
-    private double crossOverRate;
-    private int parentNum = 2;
+    private final double mutationRate;
 
-    ESNetworkTrainer(int populationSize, int numOffspring) {
+    private final Random random = new Random(System.nanoTime());
+
+    ESNetworkTrainer(int populationSize, int numParents, int numOffspring, double mutationRate) {
         this.populationSize = populationSize;
+        this.numParents = numParents;
         this.numOffspring = numOffspring;
+        this.mutationRate = mutationRate;
     }
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, List<Sample> samples) {
+        // Generate initial population
+        Population population = IntStream.range(0, populationSize)
+                .mapToObj(i -> createIndividual(network))
+                .collect(Collectors.toCollection(Population::new));
+
         int t = 0;
-        // Generate initial population randomly with random SDs
-        List<WeightMatrix> population = new ArrayList<WeightMatrix>();
-
-        for (int i = 0; i < populationSize; i++){
-            //create new weightmatrix using network
-            population.add(i, createIndividual(network, new ArrayList<Double>()));
-        }
-        // Do
-        while(t < 5000) { //while not converge; fix
-            int numOff = 0;
-            while(numOff < numOffspring) {
-                // randomly select parent1
-                WeightMatrix parent1 = population.get(new Random().nextInt(populationSize));
-
-                //randomly select parentNum parents and add to list; make sure that
-                // they are all different
-                WeightMatrix[] parents = new WeightMatrix[parentNum];
-
-                for(int i = 0; i < parentNum; i++){ //fix this
-                    // randomly select while < parentNum
-                    WeightMatrix parentTemp = population.get(new Random().nextInt(populationSize));
-                    while(parentTemp == parent1) {
-                        parentTemp = population.get(new Random().nextInt(populationSize));
-
-                        for(int j = 0; j < i; j++){
-
-                            if(parentTemp == parents[i]){
-                                parentTemp = population.get(new Random().nextInt(populationSize));
-                            }
-                        }
-                    }
-                    parents[i] = parentTemp;
-                    //enforce that none are the same
-                }
-                // Cross
-                List<Double> child = crossOver(parent1, parents);
-                // Mutate
-                List<Double> mutChild = mutate(child);
-                //add to population
-                population.add(createIndividual(network, mutChild));
-
-                numOff++;
-            }// end while
-
-            // Evaluate
-            fitness(population, samples);
-            // Choose new population; remove worst individuals
-            while (population.size() > populationSize) {
-                // find min of list and .remove
-                int minIndex = 0;
-
-                for(int i = 0; i < population.size(); i++){
-                    // if fitness at i is worse (error is larger)
-                    if(population.get(i).getFitness() > population.get(minIndex).getFitness()){
-                        minIndex = i;
-                    }
-                }
-                population.remove(minIndex);
+        do {
+            // Generate new individuals
+            for (int i = 0; i < this.numOffspring; i++) {
+                List<WeightMatrix> parents = getParents(population);
+                List<Double> childWeights = crossover(parents);
+                List<Double> mutatedChildWeights = mutate(childWeights);
+                WeightMatrix child = new WeightMatrix(network);
+                child.setWeights(mutatedChildWeights);
+                population.add(child);
             }
+
+            // Remove the least fit individuals to maintain population size
+            survivalOfTheFittest(population, samples);
+
             t++;
-        }//end while
+        } while (t < 5000);
 
-        // create new network from best
-        int minIndex = 0;
-
-        for(int i = 0; i < population.size(); i++) {
-            if (population.get(i).getFitness() < population.get(minIndex).getFitness()) {
-                minIndex = i;
-            }
-        }
-        return deserializeNetwork(population.get(minIndex));
+        // Return the best network
+        return deserializeNetwork(population.getMostFit());
     }
 
-    public WeightMatrix createIndividual(INeuralNetwork network, List<Double> w){ //fix
-
+    /**
+     * Generate a new WeightMatrix representation of the given network with random weights and sigma values
+     */
+    private WeightMatrix createIndividual(INeuralNetwork network) {
         WeightMatrix individual = new WeightMatrix(network);
+        List<Double> weights = individual.getWeights();
 
-        if(w.isEmpty()) {
-
-            for (int i = 0; i < (individual.getWeights().size()/2); i++) {
-                w.add(i, new Random().nextDouble()*3); //opinions?
+        for (int i = 0; i < weights.size(); i++) {
+            if (i < weights.size() / 2) {
+                weights.set(i, (this.random.nextDouble() * 10) - 5);    // Set weights to random value between [-5.0, 5.0]
+            } else {
+                weights.set(i, (this.random.nextDouble() * 4) - 2);     // Set sigmas to random value between [-2.0, 2.0]
             }
-            for (int i = (individual.getWeights().size()/2 + 1); i < (individual.getWeights().size()); i++) {
-                w.add(i, new Random().nextDouble());
-            }
-            individual.setWeights(w);
-        }
 
-        else{
-            individual.setWeights(w);
         }
 
         return individual;
     }
 
-    public List<Double> mutate(List<Double> individual){
-        // probabilistically mutate using stored probabilities
+    /**
+     * Select N random individuals from the population without duplicates
+     */
+    private List<WeightMatrix> getParents(Population population) {
+        List<WeightMatrix> parents = new ArrayList<>(population);
+        Collections.shuffle(parents);
+        return parents.subList(0, this.numParents);
+    }
 
-        int dimension =(individual.size()/2);
+    /**
+     * Probabilistically mutate using stored probabilities
+     */
+    private List<Double> mutate(List<Double> individual) {
+        List<Double> weights = individual.subList(0, individual.size() / 2);
+        List<Double> sigmas = individual.subList(individual.size() / 2, individual.size());
 
-        for( int i = 0; i < dimension; i++) {
-
-            int sigmaIndex = i + dimension;
-
-            if(new Random().nextInt(1000) == 0) { // mutation rate == 0.001
-                // mutate individual[i]
-                individual.set(i, (individual.get(i) + (new Random().nextGaussian()*individual.get(sigmaIndex))));
+        for (int i = 0; i < weights.size() / 2; i++) {
+            if (this.random.nextFloat() < this.mutationRate) {
+                weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i));
             }
         }
-        // sigma mutation?
+
         return individual;
     }
 
-    public List<Double> crossOver( WeightMatrix parent1, WeightMatrix[] parents){
-        // uniform cross over of weights and sigmas
-        List<Double> child = parent1.getWeights();
+    /**
+     * Perform uniform crossover between N parents
+     */
+    private List<Double> crossover(List<WeightMatrix> parents) {
+        List<Double> childWeights = new ArrayList<>(parents.get(0).getWeights());
 
-        for( int i = 0; i < child.size(); i++) {
+        List<List<Double>> parentWeights = parents.stream().map(WeightMatrix::getWeights).collect(Collectors.toList());
+        for (int i = 0; i < childWeights.size(); i++) {
+            int parentIndex = random.nextInt(numParents);
+            childWeights.set(i, parentWeights.get(parentIndex).get(i));
+        }
 
-            if(!(new Random().nextInt(10) == 0)){
-                // cross @ i
-                int parentChose = new Random().nextInt(parents.length);
-                child.set(i, parents[parentChose].getWeights().get(i));
+        return childWeights;
+    }
+
+    /**
+     * Remove the least fit individuals from the population to maintain size
+     */
+    private void survivalOfTheFittest(Population population, List<Sample> trainingData) {
+        // Use weight matrices to construct networks for testing
+        List<INeuralNetwork> networks = population.stream().map(WeightMatrix::buildNetwork).collect(Collectors.toList());
+
+        // Compute fitness of each individual
+        for (int i = 0; i < networks.size(); i++) {
+            double fitness = 0.0;
+            for (Sample sample : trainingData) {
+                double[] networkOutputs = networks.get(i).execute(sample.inputs);
+                fitness += this.meanSquaredError(networkOutputs, sample.outputs);
             }
+            population.get(i).setFitness(fitness);
         }
-        return child;
-    }
 
-    public void fitness(List<WeightMatrix> population, List<Sample> samples){
-        // for each WM in  list create the FFN
-        List<INeuralNetwork> FFNPop =  new ArrayList<INeuralNetwork>();
-        List<double[]> networkOuts = new ArrayList<double[]>();
-
-        for (int i = 0; i < population.size(); i++) {
-            //for each i create a new FFN and save to FFNPop
-            FFNPop.add(i, deserializeNetwork(population.get(i)));
-
-            //compute network outputs
-            for(int j = 0; j < samples.size(); j++) {
-                networkOuts.add(i, execute((FFNPop.get(i)), samples.get(j).inputs));
-            }
-        }
-        // update fitness for each WeightMatrix
-        for(int i = 0; i < FFNPop.size(); i++){
-            population.get(i).setFitness(meanSquaredError(networkOuts.get(i), samples.get(i).outputs));
+        // Remove least fit
+        population.sortByFitness();
+        while (population.size() > populationSize) {
+            population.remove(population.size() - 1);
         }
 
     }
-
-    }
-
+}

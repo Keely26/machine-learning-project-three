@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("WeakerAccess")
-public class WeightMatrix {
+public class WeightMatrix implements Comparable {
 
 
     private List<Double> weights;
@@ -79,11 +79,16 @@ public class WeightMatrix {
         this.weights = weights;
     }
 
-    public double getFitness(){
+    public double getFitness() {
         return this.fitness;
     }
 
-    public void setFitness(double fitness){
+    public void setFitness(double fitness) {
         this.fitness = fitness;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return Double.compare(fitness, ((WeightMatrix) o).fitness);
     }
 }
