@@ -32,9 +32,9 @@ public class Neuron {
         this.weights = new ArrayList<>(size);
         if (randomizeWeights) {
             for (int i = 0; i < size; i++) {
-                this.weights.add(random.nextDouble() - 0.5);
+                this.weights.add(random.nextDouble() - 0.00005);
             }
-            this.bias = random.nextDouble() - 0.5;
+            this.bias = random.nextDouble() - 0.00005;
         } else {
             for (int i = 0; i < size; i++) {
                 this.weights.add(1.0);
@@ -87,7 +87,7 @@ public class Neuron {
     public void updateWeight(int index, double increment) {
         double previousWeight = this.weights.get(index);
         this.previousWeights.set(index, previousWeight);
-        this.weights.set(index, previousWeight - increment);
+        this.weights.set(index, previousWeight + increment);
     }
 
     public double getPreviousWeight(int index) {

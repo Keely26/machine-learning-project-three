@@ -12,16 +12,15 @@ public class Dataset extends ArrayList<Sample> {
         this.addAll(samples);
     }
 
-
     public void shuffle() {
         Collections.shuffle(this);
     }
 
-    public Dataset trainSet() {
+    public Dataset getTrainingSet() {
         return new Dataset(this.subList(0, this.size() / 2));
     }
 
-    public Dataset testSet() {
+    public Dataset getTestingSet() {
         return new Dataset(this.subList(this.size() / 2, this.size()));
     }
 }

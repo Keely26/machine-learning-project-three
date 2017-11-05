@@ -70,17 +70,27 @@ public class DENetworkTrainer extends NetworkTrainerBase {
             // keep only top #pop offspring
             while (offspring.size() > popSize) {
                 // find min of list and .remove
-                int minIndex = 0;
+                int maxIndex = 0;
 
                 for(int i = 0; i < offspring.size(); i++){
-                    if(offspring.get(i).getFitness() > offspring.get(minIndex).getFitness()){
-                        minIndex = i;
+                    if(offspring.get(i).getFitness() > offspring.get(maxIndex).getFitness()){
+                        maxIndex = i;
                     }
                 }
-                offspring.remove(minIndex);
+                offspring.remove(maxIndex);
+            }
+            population = offspring;
+            t++;
+        } // end while
+        // create new network from best
+        int minIndex = 0;
+
+        for(int i = 0; i < population.size(); i++) {
+            if (population.get(i).getFitness() < population.get(minIndex).getFitness()) {
+                minIndex = i;
             }
         }
-        return network;
+        return deserializeNetwork(population.get(minIndex));
     }
 
     public WeightMatrix createIndividual(INeuralNetwork network, List<Double> w){

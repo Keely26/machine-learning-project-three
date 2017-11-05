@@ -19,9 +19,10 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         int t = 0;
         // Generate initial population randomly with random SDs
         List<WeightMatrix> population = new ArrayList<WeightMatrix>();
+
         for (int i = 0; i < populationSize; i++){
             //create new weightmatrix using network
-            population.add(i, creatIndividual(network, new ArrayList<Double>()));
+            population.add(i, createIndividual(network, new ArrayList<Double>()));
         }
         // Do
         while(t < 5000) { //while not converge; fix
@@ -33,15 +34,31 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
                 //randomly select parentNum parents and add to list; make sure that
                 // they are all different
                 WeightMatrix[] parents = new WeightMatrix[parentNum];
-                for(int i = 0; i < parentNum; i++){
 
+                for(int i = 0; i < parentNum; i++){ //fix this
+                    // randomly select while < parentNum
+                    WeightMatrix parentTemp = population.get(new Random().nextInt(populationSize));
+                    while(parentTemp == parent1) {
+                        parentTemp = population.get(new Random().nextInt(populationSize));
+
+                        for(int j = 0; j < i; j++){
+
+                            if(parentTemp == parents[i]){
+                                parentTemp = population.get(new Random().nextInt(populationSize));
+                            }
+                        }
+                    }
+                    parents[i] = parentTemp;
+                    //enforce that none are the same
                 }
                 // Cross
                 List<Double> child = crossOver(parent1, parents);
                 // Mutate
                 List<Double> mutChild = mutate(child);
                 //add to population
-                population.add(creatIndividual(network, mutChild));
+                population.add(createIndividual(network, mutChild));
+
+                numOff++;
             }// end while
 
             // Evaluate
@@ -59,13 +76,21 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
                 }
                 population.remove(minIndex);
             }
+            t++;
+        }//end while
 
+        // create new network from best
+        int minIndex = 0;
+
+        for(int i = 0; i < population.size(); i++) {
+            if (population.get(i).getFitness() < population.get(minIndex).getFitness()) {
+                minIndex = i;
+            }
         }
-
-        return network;
+        return deserializeNetwork(population.get(minIndex));
     }
 
-    public WeightMatrix creatIndividual(INeuralNetwork network, List<Double> w){ //fix
+    public WeightMatrix createIndividual(INeuralNetwork network, List<Double> w){ //fix
 
         WeightMatrix individual = new WeightMatrix(network);
 
