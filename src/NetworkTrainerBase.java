@@ -15,6 +15,20 @@ public class NetworkTrainerBase implements INetworkTrainer {
         return network.execute(inputs);
     }
 
+    protected void evaluateFitness(Population population, Dataset trainingData) {
+        population.forEach(individual -> {
+            double fitness = trainingData
+                    .stream()
+                    .mapToDouble((Sample sample) -> {
+                        INeuralNetwork network = individual.buildNetwork();
+                        double[] networkOutputs = network.execute(sample.inputs);
+                        return meanSquaredError(networkOutputs, sample.outputs);
+                    })
+                    .sum();
+            individual.setFitness(fitness);
+        });
+    }
+
     // Compute the normalized squared error between a set of outputs and their true values
     protected double meanSquaredError(double[] networkOutputs, double[] expectedOutputs) {
         assert networkOutputs.length == expectedOutputs.length;
