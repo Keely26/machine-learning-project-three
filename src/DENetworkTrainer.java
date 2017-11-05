@@ -31,7 +31,7 @@ public class DENetworkTrainer extends NetworkTrainerBase {
             // while  numOff < 1.3(pop)
             int numOff = 0;
 
-            while(numOff < 1.3 * popSize) {
+            while(numOff < numOffspring) {
                 //randomly select parent1
                 WeightMatrix parent = population.get(new Random().nextInt(popSize));
                 // randomly select 3 more disjoint individuals != parent1 or each other
@@ -73,7 +73,7 @@ public class DENetworkTrainer extends NetworkTrainerBase {
                 int minIndex = 0;
 
                 for(int i = 0; i < offspring.size(); i++){
-                    if(offspring.get(i).getFitness() < offspring.get(minIndex).getFitness()){
+                    if(offspring.get(i).getFitness() > offspring.get(minIndex).getFitness()){
                         minIndex = i;
                     }
                 }
@@ -90,7 +90,7 @@ public class DENetworkTrainer extends NetworkTrainerBase {
             if(w.isEmpty()) {
 
                 for (int i = 0; i < individual.getWeights().size(); i++) {
-                    w.add(i, new Random().nextDouble());
+                    w.add(i, new Random().nextDouble()*3);//opinions?
                 }
 
                 individual.setWeights(w);
