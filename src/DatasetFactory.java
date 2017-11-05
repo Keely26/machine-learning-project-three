@@ -2,14 +2,18 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DataSetFactory {
+
+public class DatasetFactory {
+
 
     private static final String PATH = "datasets/";
     private static final String CSV = ".csv";
@@ -47,3 +51,4 @@ public class DataSetFactory {
         }
     }
 }
+
