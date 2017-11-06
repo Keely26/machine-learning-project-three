@@ -1,10 +1,9 @@
-import java.util.List;
 import java.util.stream.IntStream;
 
 public class NetworkTrainerBase implements INetworkTrainer {
 
     @Override
-    public INeuralNetwork train(INeuralNetwork network, List<Sample> samples) {
+    public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
         System.out.println("Train should be called an instance of the base, not the base class itself!!");
         System.exit(-1);
         return null;
@@ -16,7 +15,7 @@ public class NetworkTrainerBase implements INetworkTrainer {
     }
 
     protected void evaluateFitness(Population population, Dataset trainingData) {
-        population.forEach(individual -> {
+        population.forEach((WeightMatrix individual) -> {
             double fitness = trainingData
                     .stream()
                     .mapToDouble((Sample sample) -> {

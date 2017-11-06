@@ -1,4 +1,3 @@
-import java.util.List;
 
 public class GANetworkTrainer extends NetworkTrainerBase {
     private double crossoverRate;
@@ -10,7 +9,7 @@ public class GANetworkTrainer extends NetworkTrainerBase {
     }
 
     @Override
-    public INeuralNetwork train(INeuralNetwork network, List<Sample> samples) {
+    public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
         //t = 0;
         //initialize population
         //fitness function
@@ -32,10 +31,10 @@ public class GANetworkTrainer extends NetworkTrainerBase {
     private void mutation(WeightMatrix parent) {
     }
 
-    private void fitnessFunction(WeightMatrix[] population) {
+    private void fitnessFunction(Population population) {
         int fitness = 0;
 
-        for(int i = 0; i < population.length; i++) {
+        for(int i = 0; i < population.size(); i++) {
 
         }
     }

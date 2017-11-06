@@ -17,17 +17,13 @@ public class Tester {
         INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
         INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.ESNetworkTrainer);
 
-
         Dataset dataSet = DatasetFactory.buildDataSet("tic-tac-toe");
 
-
-        assert MLP != null;
-        assert trainer != null;
         assert dataSet != null;
 
         trainer.train(MLP, dataSet);
 
-     //   crossValidate();
+        //   crossValidate();
     }
 
     // Execute a 5x2 cross validation for both networks computing the mean and standard deviation of their errors
@@ -43,29 +39,29 @@ public class Tester {
 
             List<Sample> set2 = dataset.subList((dataset.size() / 2), dataset.size());
 
-        //    FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
-       //     RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
+            //    FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
+            //     RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
 
-        //    ffnErrors.addAll(computeFold(set1, set2, FFN));
-     //       rbfErrors.addAll(computeFold(set1, set2, RBN));
+            //    ffnErrors.addAll(computeFold(set1, set2, FFN));
+            //       rbfErrors.addAll(computeFold(set1, set2, RBN));
 
-         //   FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
-         //   RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
+            //   FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
+            //   RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
 
-          //  ffnErrors.addAll(computeFold(set2, set1, FFN));
-         //   rbfErrors.addAll(computeFold(set2, set1, RBN));
+            //  ffnErrors.addAll(computeFold(set2, set1, FFN));
+            //   rbfErrors.addAll(computeFold(set2, set1, RBN));
         }
 
         double mean = calcMean(ffnErrors);
         double SD = calcStandardDeviation(mean, ffnErrors);
         printStats(mean, SD, "Feed Forward");
 
-      //  mean = calcMean(rbfErrors);
-       // SD = calcStandardDeviation(mean, rbfErrors);
+        //  mean = calcMean(rbfErrors);
+        // SD = calcStandardDeviation(mean, rbfErrors);
         printStats(mean, SD, "Radial Basis");
     }
 
-    private static List<Double> computeFold(List<Sample> trainSet, List<Sample> testSet, INeuralNetwork network, INetworkTrainer trainer) {
+    private static List<Double> computeFold(Dataset trainSet, Dataset testSet, INeuralNetwork network, INetworkTrainer trainer) {
         trainer.train(network, trainSet);
         return getApproximationErrors(testSet, network);
     }

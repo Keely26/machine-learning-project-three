@@ -41,7 +41,7 @@ public class WeightMatrix implements Comparable {
             List<Neuron> currentLayer = network.getLayer(i).getNeurons();
             for (int j = 0; j < currentLayer.size(); j++) {
                 List<Double> currentWeights = this.getModifiedWeights(i, j);
-                currentLayer.get(i).setWeights(currentWeights);
+                currentLayer.get(j).setWeights(currentWeights);
             }
         }
 
@@ -62,11 +62,11 @@ public class WeightMatrix implements Comparable {
             startIndex += neuron * numInputs;
             endIndex = startIndex + numInputs;
         } else {
-            startIndex += neuron * this.dimensions.get(layer);
-            endIndex = startIndex + this.dimensions.get(layer);
+            startIndex += neuron * this.dimensions.get(layer - 1);
+            endIndex = startIndex + this.dimensions.get(layer - 1);
         }
 
-        return this.weights.subList(startIndex, endIndex);
+        return new ArrayList<>(this.weights.subList(startIndex, endIndex));
     }
 
     public List<Double> getWeights() {

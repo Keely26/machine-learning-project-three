@@ -17,7 +17,7 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
     }
 
     @Override
-    public INeuralNetwork train(INeuralNetwork network, List<Sample> samples) {
+    public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
         // Iterate over the defined number of epochs
         for (int i = 0; i < epochs; i++) {
             double epochError = 0.0;

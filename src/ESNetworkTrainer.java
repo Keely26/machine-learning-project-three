@@ -22,7 +22,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     }
 
     @Override
-    public INeuralNetwork train(INeuralNetwork network, List<Sample> samples) {
+    public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
         // Generate initial population
         Population population = IntStream.range(0, populationSize)
                 .mapToObj(i -> createIndividual(network))
@@ -112,25 +112,13 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     /**
      * Remove the least fit individuals from the population to maintain size
      */
-    private void survivalOfTheFittest(Population population, List<Sample> trainingData) {
-        // Use weight matrices to construct networks for testing
-        List<INeuralNetwork> networks = population.stream().map(WeightMatrix::buildNetwork).collect(Collectors.toList());
+    private void survivalOfTheFittest(Population population, Dataset trainingData) {
+        evaluateFitness(population, trainingData);
 
-        // Compute fitness of each individual
-        for (int i = 0; i < networks.size(); i++) {
-            double fitness = 0.0;
-            for (Sample sample : trainingData) {
-                double[] networkOutputs = networks.get(i).execute(sample.inputs);
-                fitness += this.meanSquaredError(networkOutputs, sample.outputs);
-            }
-            population.get(i).setFitness(fitness);
-        }
-
-        // Remove least fit
+        // Remove least fit individuals
         population.sortByFitness();
         while (population.size() > populationSize) {
             population.remove(population.size() - 1);
         }
-
     }
 }

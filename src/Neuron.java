@@ -4,7 +4,7 @@ import java.util.Random;
 
 /**
  * Neuron class stores values weights and activations of a single neuron in the network and provides functionality
- * to compute the output of the that neuron. Supports use cases for both RBF and MLP
+ * to compute the output of the that neuron.
  */
 @SuppressWarnings("WeakerAccess")
 public class Neuron {
@@ -23,26 +23,18 @@ public class Neuron {
     public Neuron(int connections, IActivationFunction activationFunction) {
         this.size = connections;
         this.activationFunction = activationFunction;
-        this.initializeWeights(true);
+        this.initializeWeights();
     }
 
     // Set up connection weights, set to random value between [-0.5, 0.5] or all 1 depending on flag
-    private void initializeWeights(boolean randomizeWeights) {
+    private void initializeWeights() {
         Random random = new Random(System.nanoTime());
         this.weights = new ArrayList<>(size);
-        if (randomizeWeights) {
-            for (int i = 0; i < size; i++) {
-                this.weights.add(random.nextDouble() - 0.00005);
-            }
-            this.bias = random.nextDouble() - 0.00005;
-        } else {
-            for (int i = 0; i < size; i++) {
-                this.weights.add(1.0);
-            }
-            this.bias = 1.0;
+        for (int i = 0; i < size; i++) {
+            this.weights.add(random.nextDouble() - 0.00005);
         }
-        this.previousWeights = new ArrayList<>(size);
-        this.previousWeights.addAll(this.weights);
+        this.bias = random.nextDouble() - 0.00005;
+        this.previousWeights = new ArrayList<>(this.weights);
     }
 
     // Calculate the activation of the neuron given a set of inputs, apply activation function if flag is set
