@@ -42,9 +42,8 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
             // Remove the least fit individuals to maintain population size
             survivalOfTheFittest(population, samples);
-
             t++;
-        } while (t < 5000);
+        } while (t < 500);
 
         // Return the best network
         return deserializeNetwork(population.getMostFit());
@@ -63,7 +62,6 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
             } else {
                 weights.set(i, (this.random.nextDouble() * 4) - 2);     // Set sigmas to random value between [-2.0, 2.0]
             }
-
         }
 
         return individual;

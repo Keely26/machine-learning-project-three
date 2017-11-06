@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@SuppressWarnings("WeakerAccess")
 public class WeightMatrix implements Comparable {
-
 
     private List<Double> weights;
     private List<Integer> dimensions;

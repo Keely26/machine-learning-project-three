@@ -12,10 +12,10 @@ public class NetworkFactory {
     private static final int epochs = 50000;
 
     /* Evolution Strategy Parameters */
-    private static final int populationSize = 100;
-    private static final int numberOffspring = 10;
+    private static final int populationSize = 50;
+    private static final int numberOffspring = 5;
     private static final int numberParents = 2;
-    private static final double mutationRate = 0.001;
+    private static final double mutationRate = 0.01;
 
 
     public static INetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
