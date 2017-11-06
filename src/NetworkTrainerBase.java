@@ -18,6 +18,7 @@ public class NetworkTrainerBase implements INetworkTrainer {
         population.forEach((WeightMatrix individual) -> {
             double fitness = trainingData
                     .stream()
+                    .parallel()
                     .mapToDouble((Sample sample) -> {
                         INeuralNetwork network = individual.buildNetwork();
                         double[] networkOutputs = network.execute(sample.inputs);
@@ -34,6 +35,7 @@ public class NetworkTrainerBase implements INetworkTrainer {
 
         // Calculate the sum over the squared error for each output value
         double errorSum = IntStream.range(0, networkOutputs.length)
+                .parallel()
                 .mapToDouble(i -> Math.pow(networkOutputs[i] - expectedOutputs[i], 2))
                 .sum();
 

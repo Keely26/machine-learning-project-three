@@ -13,8 +13,8 @@ public class NetworkFactory {
 
     /* Evolution Strategy Parameters */
     private static final int populationSize = 50;
-    private static final int numberOffspring = 5;
-    private static final int numberParents = 2;
+    private static final int numberOffspring = 10;
+    private static final int numberParents = 3;
     private static final double mutationRate = 0.01;
 
 
