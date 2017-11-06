@@ -34,6 +34,18 @@ public class WeightMatrix implements Comparable {
         }
     }
 
+    public WeightMatrix(INeuralNetwork network, List<Double> weights) {
+        this.network = network;
+        this.networkSize = network.getSize();
+        this.numInputs = network.getLayer(0).getNeuron(0).size;
+        this.weights = new ArrayList<>(weights);
+        this.dimensions = new ArrayList<>();
+
+        for (int i = 0; i < networkSize; i++) {
+            this.dimensions.add(network.getLayer(i).size);
+        }
+    }
+
     public INeuralNetwork buildNetwork() {
         for (int i = 0; i < networkSize; i++) {
             List<Neuron> currentLayer = network.getLayer(i).getNeurons();

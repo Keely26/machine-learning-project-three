@@ -21,9 +21,7 @@ public class NetworkTrainerBase implements INetworkTrainer {
                     .mapToDouble((Sample sample) -> {
                         INeuralNetwork network = individual.buildNetwork();
                         double[] networkOutputs = network.execute(sample.inputs);
-                        double error = meanSquaredError(networkOutputs, sample.outputs);
-                        System.out.println(error);
-                        return error;
+                        return meanSquaredError(networkOutputs, sample.outputs);
                     })
                     .sum();
             individual.setFitness(fitness);

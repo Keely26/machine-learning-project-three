@@ -3,7 +3,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class ESNetworkTrainer extends NetworkTrainerBase {
 
@@ -24,26 +23,25 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
         // Generate initial population
-        Population population = IntStream.range(0, populationSize)
-                .mapToObj(i -> createIndividual(network))
-                .collect(Collectors.toCollection(Population::new));
+        Population population = new Population();
+        for (int i = 0; i < populationSize; i++) {
+            population.add(createIndividual(network));
+        }
 
-        int t = 0;
-        do {
-            // Generate new individuals
-            for (int i = 0; i < this.numOffspring; i++) {
-                List<WeightMatrix> parents = getParents(population);
-                List<Double> childWeights = crossover(parents);
-                List<Double> mutatedChildWeights = mutate(childWeights);
-                WeightMatrix child = new WeightMatrix(network);
-                child.setWeights(mutatedChildWeights);
-                population.add(child);
-            }
+        // Split training set into training and validation sets
+        Collections.shuffle(samples);
+        Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
+        Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
+
+        for (int i = 0; i < 500; i++) {
+            // Perform reproductive step, adding children into population
+            generateOffspring(network, population);
 
             // Remove the least fit individuals to maintain population size
-            survivalOfTheFittest(population, samples);
-            t++;
-        } while (t < 500);
+            survivalOfTheFittest(population, trainingSet);
+
+            validate(population.get(0), validationSet);
+        }
 
         // Return the best network
         return deserializeNetwork(population.getMostFit());
@@ -65,6 +63,19 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         }
 
         return individual;
+    }
+
+    /**
+     * Reproductive step: Select parents, perform crossover and mutation, add children to population
+     */
+    private void generateOffspring(INeuralNetwork network, Population population) {
+        for (int j = 0; j < this.numOffspring; j++) {
+            List<WeightMatrix> parents = getParents(population);
+            List<Double> childWeights = crossover(parents);
+            List<Double> mutatedChildWeights = mutate(childWeights);
+            WeightMatrix child = new WeightMatrix(network, mutatedChildWeights);
+            population.add(child);
+        }
     }
 
     /**
@@ -118,5 +129,17 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         while (population.size() > populationSize) {
             population.remove(population.size() - 1);
         }
+    }
+
+    /**
+     *  Use the validation set to determine the quality of the best individual
+     */
+    private void validate(WeightMatrix mostFit, Dataset validationSet) {
+        INeuralNetwork network = mostFit.buildNetwork();
+        double error = 0.0;
+        for (Sample sample : validationSet) {
+            error += meanSquaredError(network.execute(sample.inputs), sample.outputs);
+        }
+        System.out.println(error / validationSet.size());
     }
 }
