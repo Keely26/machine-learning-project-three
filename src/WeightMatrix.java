@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 public class WeightMatrix implements Comparable {
 
     private List<Double> weights;
+    private List<Double> sigmas;
     private List<Integer> dimensions;
 
     private double fitness;
@@ -20,6 +21,7 @@ public class WeightMatrix implements Comparable {
         this.networkSize = network.getSize();
         this.numInputs = network.getLayer(0).getNeuron(0).size;
         this.weights = new ArrayList<>();
+        this.sigmas = new ArrayList<>();
         this.dimensions = new ArrayList<>();
 
         for (int i = 0; i < networkSize; i++) {
@@ -34,11 +36,12 @@ public class WeightMatrix implements Comparable {
         }
     }
 
-    public WeightMatrix(INeuralNetwork network, List<Double> weights) {
+    public WeightMatrix(INeuralNetwork network, List<Double> weights, List<Double> sigmas) {
         this.network = network;
         this.networkSize = network.getSize();
         this.numInputs = network.getLayer(0).getNeuron(0).size;
         this.weights = new ArrayList<>(weights);
+        this.sigmas = new ArrayList<>(sigmas);
         this.dimensions = new ArrayList<>();
 
         for (int i = 0; i < networkSize; i++) {
@@ -100,5 +103,25 @@ public class WeightMatrix implements Comparable {
     @Override
     public int compareTo(Object o) {
         return Double.compare(fitness, ((WeightMatrix) o).fitness);
+    }
+
+    public void increaseSigma() {
+        for (int i = 0; i < this.sigmas.size(); i++) {
+            this.sigmas.set(i, this.sigmas.get(i) * 1.1);
+        }
+    }
+
+    public void decreaseSigma() {
+        for (int i = 0; i < this.sigmas.size(); i++) {
+            this.sigmas.set(i, this.sigmas.get(i) * 0.9);
+        }
+    }
+
+    public List<Double> getSigmas() {
+        return sigmas;
+    }
+
+    public void setSigmas(List<Double> sigmas) {
+        this.sigmas = sigmas;
     }
 }

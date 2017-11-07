@@ -2,7 +2,7 @@
 public class NetworkFactory {
 
     /* MultiLayer Perceptron Parameters */
-    private static final int[] layers = new int[]{9, 10, 5, 1};    // Size of each layer
+    private static final int[] layers = new int[]{8, 10, 10, 1};    // Size of each layer
     private static final IActivationFunction activationFunction = new HyperbolicTangent();
 
     /* Backpropagation Parameters */
@@ -13,9 +13,9 @@ public class NetworkFactory {
 
     /* Evolution Strategy Parameters */
     private static final int populationSize = 50;
-    private static final int numberOffspring = 10;
-    private static final int numberParents = 3;
-    private static final double mutationRate = 0.01;
+    private static final int numberOffspring = 5;
+    private static final int numberParents = 2;
+    private static final double mutationRate = 0.05;
 
 
     public static INetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
