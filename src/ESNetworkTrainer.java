@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -16,8 +15,6 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     private final int numParents;
     private final int numOffspring;
     private final double mutationRate;
-
-    private final Random random = new Random(System.nanoTime());
 
     ESNetworkTrainer(int populationSize, int numParents, int numOffspring, double mutationRate) {
         this.populationSize = populationSize;
@@ -39,7 +36,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
-        for (int i = 0; i < 50000; i++) {
+        for (int i = 0; i < 2000; i++) {
             // Perform reproductive step, adding children into population
             generateOffspring(population, i);
 
@@ -47,7 +44,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
             survivalOfTheFittest(population, trainingSet);
 
             // Print the performance of population run against the validation set // TODO: Use this is an early cutoff somehow
-            validateFitness(population, validationSet, i);
+            validatePopulation(population, validationSet, i);
         }
 
         // Return the best network
@@ -76,7 +73,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     private void generateOffspring(Population population, int generation) {
         for (int j = 0; j < this.numOffspring; j++) {
             // Select parents
-            Population parents = getParents(population);
+            Population parents = selectParents(population);
             // Crossover
             WeightMatrix child = crossover(parents);
             // Mutation
@@ -94,7 +91,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
      * Select N individuals from the population without duplicates using rank based selection according to an
      * exponential distribution
      */
-    private Population getParents(Population population) {
+    private Population selectParents(Population population) {
         population.sortByFitness();
 
         List<Integer> parentIndices = new ArrayList<>(this.numParents);
@@ -149,8 +146,8 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         List<Double> childWeights = new ArrayList<>(parents.get(0).getWeights());
         List<Double> childSigmas = new ArrayList<>(parents.get(0).getWeights());
 
-        List<List<Double>> parentWeights = parents.stream().parallel().map(WeightMatrix::getWeights).collect(Collectors.toList());
-        List<List<Double>> parentSigmas = parents.stream().parallel().map(WeightMatrix::getSigmas).collect(Collectors.toList());
+        List<List<Double>> parentWeights = parents.parallelStream().map(WeightMatrix::getWeights).collect(Collectors.toList());
+        List<List<Double>> parentSigmas = parents.parallelStream().map(WeightMatrix::getSigmas).collect(Collectors.toList());
 
         IntStream.range(0, childWeights.size()).parallel().forEach(i -> {
             int parentIndex = random.nextInt(numParents);
@@ -173,7 +170,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
      * then remove the least fit individuals from the population to maintain size
      */
     private void survivalOfTheFittest(Population population, Dataset trainingData) {
-        evaluateFitness(population, trainingData);
+        evaluatePopulation(population, trainingData);
 
         // Remove least fit individuals
         population.sortByFitness();

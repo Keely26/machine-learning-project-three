@@ -17,7 +17,7 @@ public class Tester {
         INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
         INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.ESNetworkTrainer);
 
-        Dataset dataSet = DatasetFactory.buildDataSet("yeast");
+        Dataset dataSet = DatasetFactory.buildDataSet("tic-tac-toe");
 
         assert dataSet != null;
 

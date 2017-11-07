@@ -6,6 +6,9 @@ import java.util.stream.IntStream;
 
 public class WeightMatrix implements Comparable {
 
+    private static final double sigmaIncreaseFactor = 1.1;
+    private static final double sigmaDecreaseFactor = 0.9;
+
     private List<Double> weights;
     private List<Double> sigmas;
     private List<Integer> dimensions;
@@ -36,12 +39,11 @@ public class WeightMatrix implements Comparable {
         }
     }
 
-    public WeightMatrix(INeuralNetwork network, List<Double> weights, List<Double> sigmas) {
+    public WeightMatrix(INeuralNetwork network, List<Double> weights) {
         this.network = network;
         this.networkSize = network.getSize();
         this.numInputs = network.getLayer(0).getNeuron(0).size;
         this.weights = new ArrayList<>(weights);
-        this.sigmas = new ArrayList<>(sigmas);
         this.dimensions = new ArrayList<>();
 
         for (int i = 0; i < networkSize; i++) {
@@ -106,15 +108,11 @@ public class WeightMatrix implements Comparable {
     }
 
     public void increaseSigma() {
-        for (int i = 0; i < this.sigmas.size(); i++) {
-            this.sigmas.set(i, this.sigmas.get(i) * 1.1);
-        }
+        IntStream.range(0, this.sigmas.size()).parallel().forEach(i -> this.sigmas.set(i, this.sigmas.get(i) * sigmaIncreaseFactor));
     }
 
     public void decreaseSigma() {
-        for (int i = 0; i < this.sigmas.size(); i++) {
-            this.sigmas.set(i, this.sigmas.get(i) * 0.9);
-        }
+        IntStream.range(0, this.sigmas.size()).parallel().forEach(i -> this.sigmas.set(i, this.sigmas.get(i) * sigmaDecreaseFactor));
     }
 
     public List<Double> getSigmas() {

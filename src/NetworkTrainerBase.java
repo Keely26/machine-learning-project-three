@@ -1,6 +1,9 @@
+import java.util.Random;
 import java.util.stream.IntStream;
 
 public class NetworkTrainerBase implements INetworkTrainer {
+
+    protected final Random random = new Random(System.nanoTime());
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
@@ -14,28 +17,29 @@ public class NetworkTrainerBase implements INetworkTrainer {
         return network.execute(inputs);
     }
 
-    protected void evaluateFitness(Population population, Dataset trainingData) {
-        population.forEach((WeightMatrix individual) -> {
-            double fitness = trainingData
-                    .stream()
-                    .parallel()
-                    .mapToDouble((Sample sample) -> {
-                        INeuralNetwork network = individual.buildNetwork();
-                        double[] networkOutputs = network.execute(sample.inputs);
-                        return meanSquaredError(networkOutputs, sample.outputs);
-                    })
-                    .sum();
-            individual.setFitness(fitness);
-        });
+    protected void evaluatePopulation(Population population, Dataset trainingData) {
+        population.parallelStream().forEach((WeightMatrix individual) -> evaluateIndividual(individual, trainingData));
     }
 
-    protected void validateFitness(Population population, Dataset validationSet, int generation) {
-        double error = population.stream()
-                .parallel()
+    protected void evaluateIndividual(WeightMatrix individual, Dataset trainingData) {
+        double fitness = trainingData
+                .parallelStream()
+                .mapToDouble((Sample sample) -> {
+                    INeuralNetwork network = individual.buildNetwork();
+                    double[] networkOutputs = network.execute(sample.inputs);
+                    return meanSquaredError(networkOutputs, sample.outputs);
+                })
+                .sum();
+        individual.setFitness(fitness);
+    }
+
+    protected void validatePopulation(Population population, Dataset validationSet, int generation) {
+        double error = population
+                .parallelStream()
                 .mapToDouble(individual -> validationSet.stream()
                         .mapToDouble(sample -> meanSquaredError(individual.buildNetwork().execute(sample.inputs), sample.outputs)).sum() / validationSet.size())
                 .sum();
-        System.out.println(generation + "\t\t" + "Average Error: " + error / validationSet.size());
+        System.out.println("Generation: " + generation + "\t\t" + "Average Error (validation set): " + error / validationSet.size());
     }
 
     // Compute the normalized squared error between a set of outputs and their true values
