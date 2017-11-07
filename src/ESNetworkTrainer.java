@@ -41,7 +41,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
             // Remove the least fit individuals to maintain population size
             survivalOfTheFittest(population, trainingSet);
 
-            validate(population.get(0), validationSet, i);
+            validateFitness(population, validationSet, i);
         }
 
         // Return the best network
@@ -104,22 +104,18 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         List<Double> weights = individual.getWeights();
         List<Double> sigmas = individual.getSigmas();
 
-        for (int i = 0; i < weights.size() / 2; i++) {
-            if (this.random.nextFloat() < this.mutationRate) {
-                weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i));
-            }
-        }
+        IntStream.range(0, weights.size() / 2).filter(i -> this.random.nextFloat() < this.mutationRate)
+                .parallel()
+                .forEach(i -> weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i)));
     }
 
     private void hyperMutate(WeightMatrix individual) {
         List<Double> weights = individual.getWeights();
         List<Double> sigmas = individual.getSigmas();
 
-        for (int i = 0; i < weights.size() / 2; i++) {
-            if (this.random.nextFloat() < this.mutationRate) {
-                weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i) * 10);
-            }
-        }
+        IntStream.range(0, weights.size() / 2).filter(i -> this.random.nextFloat() < this.mutationRate)
+                .parallel()
+                .forEach(i -> weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i) * 10));
     }
 
     /**
@@ -129,15 +125,15 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         List<Double> childWeights = new ArrayList<>(parents.get(0).getWeights());
         List<Double> childSigmas = new ArrayList<>(parents.get(0).getWeights());
 
-        List<List<Double>> parentWeights = parents.stream().map(WeightMatrix::getWeights).collect(Collectors.toList());
-        List<List<Double>> parentSigmas = parents.stream().map(WeightMatrix::getSigmas).collect(Collectors.toList());
+        List<List<Double>> parentWeights = parents.stream().parallel().map(WeightMatrix::getWeights).collect(Collectors.toList());
+        List<List<Double>> parentSigmas = parents.stream().parallel().map(WeightMatrix::getSigmas).collect(Collectors.toList());
 
-        IntStream.range(0, childWeights.size()).forEach(i -> {
+        IntStream.range(0, childWeights.size()).parallel().forEach(i -> {
             int parentIndex = random.nextInt(numParents);
             childWeights.set(i, parentWeights.get(parentIndex).get(i));
         });
 
-        IntStream.range(0, childSigmas.size()).forEach(i -> {
+        IntStream.range(0, childSigmas.size()).parallel().forEach(i -> {
             int parentIndex = random.nextInt(numParents);
             childSigmas.set(i, parentSigmas.get(parentIndex).get(i));
         });
@@ -168,17 +164,5 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
                 population.get(i).increaseSigma();
             }
         }
-    }
-
-    /**
-     * Use the validation set to determine the quality of the best individual
-     */
-    private void validate(WeightMatrix mostFit, Dataset validationSet, int generation) {
-        INeuralNetwork network = mostFit.buildNetwork();
-        double error = 0.0;
-        for (Sample sample : validationSet) {
-            error += meanSquaredError(network.execute(sample.inputs), sample.outputs);
-        }
-        System.out.println(generation + "\t\t" + error / validationSet.size());
     }
 }

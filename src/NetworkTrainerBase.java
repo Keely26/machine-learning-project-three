@@ -29,6 +29,15 @@ public class NetworkTrainerBase implements INetworkTrainer {
         });
     }
 
+    protected void validateFitness(Population population, Dataset validationSet, int generation) {
+        double error = population.stream()
+                .parallel()
+                .mapToDouble(individual -> validationSet.stream()
+                        .mapToDouble(sample -> meanSquaredError(individual.buildNetwork().execute(sample.inputs), sample.outputs)).sum() / validationSet.size())
+                .sum();
+        System.out.println(generation + "\t\t" + "Average Error: " + error / validationSet.size());
+    }
+
     // Compute the normalized squared error between a set of outputs and their true values
     protected double meanSquaredError(double[] networkOutputs, double[] expectedOutputs) {
         assert networkOutputs.length == expectedOutputs.length;
