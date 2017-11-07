@@ -5,6 +5,11 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Implementation of (mu, lambda) - Evolution Strategy for neural net training
+ *
+ * @author Zach Connelly
+ */
 public class ESNetworkTrainer extends NetworkTrainerBase {
 
     private final int populationSize;
@@ -24,10 +29,10 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
         // Generate initial population
-        Population population = new Population();
-        for (int i = 0; i < populationSize; i++) {
-            population.add(createIndividual(network));
-        }
+        Population population = IntStream.range(0, populationSize)
+                .parallel()
+                .mapToObj(i -> createIndividual(network))
+                .collect(Collectors.toCollection(Population::new));
 
         // Split training set into training and validation sets
         Collections.shuffle(samples);
@@ -41,6 +46,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
             // Remove the least fit individuals to maintain population size
             survivalOfTheFittest(population, trainingSet);
 
+            // Print the performance of population run against the validation set // TODO: Use this is an early cutoff somehow
             validateFitness(population, validationSet, i);
         }
 
@@ -57,6 +63,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         // Set weights to random value between [-5.0, 5.0]
         IntStream.range(0, weights.size()).parallel().forEach(i -> weights.set(i, (this.random.nextDouble() * 10) - 5));
 
+        // Set sigmas to random value between [-2.0, 2.0]
         List<Double> sigmas = IntStream.range(0, weights.size()).parallel().mapToObj(i -> (this.random.nextDouble() * 4) - 2).collect(Collectors.toList());
         individual.setSigmas(sigmas);
 
@@ -68,28 +75,37 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
      */
     private void generateOffspring(Population population, int generation) {
         for (int j = 0; j < this.numOffspring; j++) {
+            // Select parents
             Population parents = getParents(population);
+            // Crossover
             WeightMatrix child = crossover(parents);
+            // Mutation
             if (generation % 50 == 0) {
                 hyperMutate(child);
+            } else {
+                mutate(child);
             }
-            mutate(child);
+            // Add offspring into population
             population.add(child);
         }
     }
 
     /**
-     * Select N random individuals from the population without duplicates
+     * Select N individuals from the population without duplicates using rank based selection according to an
+     * exponential distribution
      */
     private Population getParents(Population population) {
         population.sortByFitness();
+
         List<Integer> parentIndices = new ArrayList<>(this.numParents);
         while (parentIndices.size() < this.numParents) {
+            // Select parent indices according to an exponential distribution // TODO: Find cleaner way to do this
             int temp = (int) (StrictMath.log(1 - random.nextDouble()) * -populationSize) % populationSize;
             if (!parentIndices.contains(temp)) {
                 parentIndices.add(temp);
             }
         }
+        // Pull parents out of population based on selected indices
         Population parents = new Population();
         for (int i = 0; i < this.numParents; i++) {
             parents.add(population.get(parentIndices.get(i)));
@@ -104,18 +120,26 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         List<Double> weights = individual.getWeights();
         List<Double> sigmas = individual.getSigmas();
 
-        IntStream.range(0, weights.size() / 2).filter(i -> this.random.nextFloat() < this.mutationRate)
+        IntStream.range(0, weights.size() / 2)
+                .filter(i -> this.random.nextFloat() < this.mutationRate)
                 .parallel()
                 .forEach(i -> weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i)));
     }
 
+    // TODO: Consolidate these two methods using Consumer or boolean flag
+
+    /**
+     * Perform a more extreme mutation
+     * Uses five times the mutation rate and a large value change
+     */
     private void hyperMutate(WeightMatrix individual) {
         List<Double> weights = individual.getWeights();
         List<Double> sigmas = individual.getSigmas();
 
-        IntStream.range(0, weights.size() / 2).filter(i -> this.random.nextFloat() < this.mutationRate)
+        IntStream.range(0, weights.size() / 2)
+                .filter(i -> this.random.nextFloat() < this.mutationRate / 5)
                 .parallel()
-                .forEach(i -> weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i) * 10));
+                .forEach(i -> weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i) * 3));
     }
 
     /**
@@ -145,7 +169,8 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     }
 
     /**
-     * Remove the least fit individuals from the population to maintain size
+     * Run each individual against the training set to evaluate its fitness
+     * then remove the least fit individuals from the population to maintain size
      */
     private void survivalOfTheFittest(Population population, Dataset trainingData) {
         evaluateFitness(population, trainingData);
