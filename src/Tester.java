@@ -15,7 +15,7 @@ public class Tester {
 
     public static void main(String[] args) {
         INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
-        INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer);
+        INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
 
         Dataset dataSet = DatasetFactory.buildDataSet("tic-tac-toe");
 

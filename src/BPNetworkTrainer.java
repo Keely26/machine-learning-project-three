@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -19,12 +20,17 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
+
+        // Split training set into training and validation sets
+        Collections.shuffle(samples);
+        Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
+        Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
+
         // Iterate over the defined number of epochs
         for (int i = 0; i < epochs; i++) {
-            double epochError = 0.0;
-            for (Sample sample : samples) {
+            for (Sample sample : trainingSet) {
                 // Forward propagate each sample through the network
-                double[] networkOutputs = this.execute(network, sample.inputs);
+                this.execute(network, sample.inputs);
 
                 // Backpropagate the error using the true outputs
                 this.backPropagate(network, sample.outputs);
@@ -34,18 +40,19 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
                     this.updateWeights(network, sample.inputs);
                     this.resetWeightDeltas(network);
                 }
-                // Sum the total error for each iteration
-                epochError += this.meanSquaredError(sample.outputs, networkOutputs);
             }
-            System.out.println("Epoch: " + i + "\t\tError: " + epochError / samples.size());
+
+            validate(network, validationSet, i);
         }
 
         return network;
     }
 
-    // Compute the weight deltas for each weight in the network starting with the output layer
-    // Use the gradient of the output errors to compute the deltas for the first hidden layer
-    // Use the deltas established in the first hidden layer to compute those for subsequent layers
+    /**
+     * Compute the weight deltas for each weight in the network starting with the output layer
+     * Use the gradient of the output errors to compute the deltas for the first hidden layer
+     * Use the deltas established in the first hidden layer to compute those for subsequent layers
+     */
     private void backPropagate(INeuralNetwork network, double[] expectedOutputs) {
         for (int i = network.getSize() - 1; i >= 0; i--) {
             Layer currentLayer = network.getLayer(i);
@@ -108,12 +115,19 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
         }
     }
 
-    // TODO: Extract weight deltas from each neuron into matrix in trainer class
     // Reset all of the weight deltas in the network to zero
     private void resetWeightDeltas(INeuralNetwork network) {
         IntStream.range(0, network.getSize())
                 .forEach(i -> network.getLayer(i)
                         .getNeurons()
                         .forEach(neuron -> neuron.setDelta(0.0)));
+    }
+
+    // Compute the average error over the validation set and print to console
+    private void validate(INeuralNetwork network, Dataset validationSet, int epoch) {
+        System.out.println("Epoch: " + epoch + "\t\tValidation Set Error: " + validationSet
+                .parallelStream()
+                .mapToDouble(sample -> this.meanSquaredError(network.execute(sample.inputs), sample.outputs))
+                .sum() / validationSet.size());
     }
 }
