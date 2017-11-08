@@ -24,7 +24,6 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
-
         // Generate initial population
         Population population = IntStream.range(0, populationSize)
                 .parallel()
@@ -52,14 +51,16 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     }
 
     /**
-     * Create a new individual, add sigma values
+     * Generate a new WeightMatrix representation of the given network with random weights and sigma values
      */
-    @Override
-    protected WeightMatrix createIndividual(INeuralNetwork network) {
-        WeightMatrix individual = super.createIndividual(network);
+    private WeightMatrix createIndividual(INeuralNetwork network) {
+        WeightMatrix individual = new WeightMatrix(network);
+        List<Double> weights = individual.getWeights();
+        // Set weights to random value between [-5.0, 5.0]
+        IntStream.range(0, weights.size()).parallel().forEach(i -> weights.set(i, (this.random.nextDouble() * 10) - 5));
 
         // Set sigmas to random value between [-2.0, 2.0]
-        List<Double> sigmas = IntStream.range(0, individual.getWeights().size()).parallel().mapToObj(i -> (this.random.nextDouble() * 4) - 2).collect(Collectors.toList());
+        List<Double> sigmas = IntStream.range(0, weights.size()).parallel().mapToObj(i -> (this.random.nextDouble() * 4) - 2).collect(Collectors.toList());
         individual.setSigmas(sigmas);
 
         return individual;
@@ -69,22 +70,20 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
      * Reproductive step: Select parents, perform crossover and mutation, add children to population
      */
     private void generateOffspring(Population population, int generation) {
-        for (int j = 0; j < this.numOffspring; j++) {
+        for (int i = 0; i < this.numOffspring; i++) {
             // Select parents
             Population parents = selectParents(population, numParents);
             // Crossover
             WeightMatrix child = crossover(parents);
             // Mutation
-            mutate(child, generation % 50 == 0);
+            mutate(child, generation % 30 == 0);
             // Add offspring into population
             population.add(child);
         }
     }
 
     /**
-     * Probabilistically mutate using stored probabilities,
-     * if hyperMutate is set to true, perform a more extreme mutation
-     * using five times the mutation rate and a larger value change
+     * Probabilistically mutate using stored probabilities
      */
     private void mutate(WeightMatrix individual, boolean hyperMutate) {
         List<Double> weights = individual.getWeights();
@@ -137,11 +136,13 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
         // Remove least fit individuals
         population.sortByFitness();
-        population = new Population(population.subList(0, populationSize));
+        while (population.size() > populationSize) {
+            population.remove(population.size() - 1);
+        }
 
         // Adjust sigmas
         for (int i = 0; i < populationSize; i++) {
-            population.get(i).adjustSigma(i < populationSize / 5);
+            population.get(i).adjustSigma(i > populationSize / 5);
         }
     }
 }

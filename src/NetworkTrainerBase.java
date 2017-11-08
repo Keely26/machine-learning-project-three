@@ -30,7 +30,6 @@ public class NetworkTrainerBase implements INetworkTrainer {
      * exponential distribution
      */
     protected Population selectParents(Population population, int numParents) {
-        population.sortByFitness();
         List<Integer> parentIndices = new ArrayList<>(numParents);
         while (parentIndices.size() < numParents) {
             // Select parent indices according to an exponential distribution // TODO: Find cleaner way to do this
