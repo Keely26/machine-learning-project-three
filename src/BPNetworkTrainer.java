@@ -10,6 +10,7 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
     private int epochs;
 
     BPNetworkTrainer(double learningRate, double momentum, int batchSize, int epochs) {
+        super(0);
         this.learningRate = learningRate;
         this.momentum = momentum;
         this.batchSize = batchSize;

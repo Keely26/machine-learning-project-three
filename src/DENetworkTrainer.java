@@ -6,13 +6,12 @@ import java.util.stream.IntStream;
 
 public class DENetworkTrainer extends NetworkTrainerBase {
 
-    private int populationSize;
     private double beta;
 
     private final List<Integer> indexList;
 
     DENetworkTrainer(int populationSize, double beta) {
-        this.populationSize = populationSize;
+        super(populationSize);
         this.beta = beta;
         indexList = new ArrayList<>(populationSize);
         for (int i = 0; i < populationSize; i++) {

@@ -1,9 +1,17 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
 public class NetworkTrainerBase implements INetworkTrainer {
 
     protected final Random random = new Random(System.nanoTime());
+    protected final int populationSize;
+
+    NetworkTrainerBase(int populationSize) {
+        this.populationSize = populationSize;
+    }
+
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
@@ -15,6 +23,28 @@ public class NetworkTrainerBase implements INetworkTrainer {
     // Take a network and a set of inputs, run them through the network and return the outputs
     protected double[] execute(INeuralNetwork network, double[] inputs) {
         return network.execute(inputs);
+    }
+
+    /**
+     * Select N individuals from the population without duplicates using rank based selection according to an
+     * exponential distribution
+     */
+    protected Population selectParents(Population population, int numParents) {
+        population.sortByFitness();
+        List<Integer> parentIndices = new ArrayList<>(numParents);
+        while (parentIndices.size() < numParents) {
+            // Select parent indices according to an exponential distribution // TODO: Find cleaner way to do this
+            int temp = (int) (StrictMath.log(1 - random.nextDouble()) * -populationSize) % populationSize;
+            if (!parentIndices.contains(temp)) {
+                parentIndices.add(temp);
+            }
+        }
+        // Pull parents out of population based on selected indices
+        Population parents = new Population();
+        for (int i = 0; i < numParents; i++) {
+            parents.add(population.get(parentIndices.get(i)));
+        }
+        return parents;
     }
 
     protected void evaluatePopulation(Population population, Dataset trainingData) {

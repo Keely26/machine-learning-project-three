@@ -11,13 +11,12 @@ import java.util.stream.IntStream;
  */
 public class ESNetworkTrainer extends NetworkTrainerBase {
 
-    private final int populationSize;
     private final int numParents;
     private final int numOffspring;
     private final double mutationRate;
 
     ESNetworkTrainer(int populationSize, int numParents, int numOffspring, double mutationRate) {
-        this.populationSize = populationSize;
+        super(populationSize);
         this.numParents = numParents;
         this.numOffspring = numOffspring;
         this.mutationRate = mutationRate;
@@ -73,7 +72,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
     private void generateOffspring(Population population, int generation) {
         for (int j = 0; j < this.numOffspring; j++) {
             // Select parents
-            Population parents = selectParents(population);
+            Population parents = selectParents(population, numParents);
             // Crossover
             WeightMatrix child = crossover(parents);
             // Mutation
@@ -85,29 +84,6 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
             // Add offspring into population
             population.add(child);
         }
-    }
-
-    /**
-     * Select N individuals from the population without duplicates using rank based selection according to an
-     * exponential distribution
-     */
-    private Population selectParents(Population population) {
-        population.sortByFitness();
-
-        List<Integer> parentIndices = new ArrayList<>(this.numParents);
-        while (parentIndices.size() < this.numParents) {
-            // Select parent indices according to an exponential distribution // TODO: Find cleaner way to do this
-            int temp = (int) (StrictMath.log(1 - random.nextDouble()) * -populationSize) % populationSize;
-            if (!parentIndices.contains(temp)) {
-                parentIndices.add(temp);
-            }
-        }
-        // Pull parents out of population based on selected indices
-        Population parents = new Population();
-        for (int i = 0; i < this.numParents; i++) {
-            parents.add(population.get(parentIndices.get(i)));
-        }
-        return parents;
     }
 
     /**
@@ -174,9 +150,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
         // Remove least fit individuals
         population.sortByFitness();
-        while (population.size() > populationSize) {
-            population.remove(population.size() - 1);
-        }
+        population = new Population(population.subList(0, populationSize));
 
         // Adjust sigmas
         for (int i = 0; i < populationSize; i++) {
