@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * The WeightMatrix class provides a serialized representation of an INeuralNetwork, at initialization the dimensions
+ * and weights of the network provided are extracted and recorded, where the weights are a 1D list, trainers may then use
+ * this representation to perform various opperation such as mutation and crossover between different WeightMatrices
+ */
 public class WeightMatrix implements Comparable {
 
     private static final double sigmaIncreaseFactor = 1.1;
@@ -51,6 +56,9 @@ public class WeightMatrix implements Comparable {
         }
     }
 
+    /**
+     * Construct an INeuralNetwork from the dimensions and weights stored in the class
+     */
     public INeuralNetwork buildNetwork() {
         for (int i = 0; i < networkSize; i++) {
             List<Neuron> currentLayer = network.getLayer(i).getNeurons();
@@ -63,12 +71,16 @@ public class WeightMatrix implements Comparable {
         return this.network;
     }
 
+    /**
+     * Retrieve the list of weights corresponding to a particular neuron in a particular layer
+     */
     private List<Double> getModifiedWeights(int layer, int neuron) {
         int startIndex, endIndex;
 
         // Accumulate layer index offset
         startIndex = IntStream
                 .range(0, layer)
+                .parallel()
                 .map(i -> i == 0 ? numInputs * dimensions.get(0) : dimensions.get(i - 1) * dimensions.get(i))
                 .sum();
 
@@ -102,17 +114,14 @@ public class WeightMatrix implements Comparable {
         this.fitness = fitness;
     }
 
-    @Override
-    public int compareTo(Object o) {
-        return Double.compare(fitness, ((WeightMatrix) o).fitness);
-    }
-
-    public void increaseSigma() {
-        IntStream.range(0, this.sigmas.size()).parallel().forEach(i -> this.sigmas.set(i, this.sigmas.get(i) * sigmaIncreaseFactor));
-    }
-
-    public void decreaseSigma() {
-        IntStream.range(0, this.sigmas.size()).parallel().forEach(i -> this.sigmas.set(i, this.sigmas.get(i) * sigmaDecreaseFactor));
+    /**
+     * Modify each sigma according the the 1/5th rule, most fit individuals have their sigma decreased, while other
+     * are increased according to the constant factors set above
+     */
+    public void adjustSigma(boolean increase) {
+        IntStream.range(0, this.sigmas.size())
+                .parallel()
+                .forEach(i -> this.sigmas.set(i, this.sigmas.get(i) * (increase ? sigmaIncreaseFactor : sigmaDecreaseFactor)));
     }
 
     public List<Double> getSigmas() {
@@ -121,5 +130,10 @@ public class WeightMatrix implements Comparable {
 
     public void setSigmas(List<Double> sigmas) {
         this.sigmas = sigmas;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return Double.compare(fitness, ((WeightMatrix) o).fitness);
     }
 }
