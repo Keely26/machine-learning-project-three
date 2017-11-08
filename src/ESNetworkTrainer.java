@@ -24,6 +24,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
+
         // Generate initial population
         Population population = IntStream.range(0, populationSize)
                 .parallel()
@@ -47,20 +48,18 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         }
 
         // Return the best network
-        return deserializeNetwork(population.getMostFit());
+        return population.getMostFit().buildNetwork();
     }
 
     /**
-     * Generate a new WeightMatrix representation of the given network with random weights and sigma values
+     * Create a new individual, add sigma values
      */
-    private WeightMatrix createIndividual(INeuralNetwork network) {
-        WeightMatrix individual = new WeightMatrix(network);
-        List<Double> weights = individual.getWeights();
-        // Set weights to random value between [-5.0, 5.0]
-        IntStream.range(0, weights.size()).parallel().forEach(i -> weights.set(i, (this.random.nextDouble() * 10) - 5));
+    @Override
+    protected WeightMatrix createIndividual(INeuralNetwork network) {
+        WeightMatrix individual = super.createIndividual(network);
 
         // Set sigmas to random value between [-2.0, 2.0]
-        List<Double> sigmas = IntStream.range(0, weights.size()).parallel().mapToObj(i -> (this.random.nextDouble() * 4) - 2).collect(Collectors.toList());
+        List<Double> sigmas = IntStream.range(0, individual.getWeights().size()).parallel().mapToObj(i -> (this.random.nextDouble() * 4) - 2).collect(Collectors.toList());
         individual.setSigmas(sigmas);
 
         return individual;
@@ -76,43 +75,27 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
             // Crossover
             WeightMatrix child = crossover(parents);
             // Mutation
-            if (generation % 50 == 0) {
-                hyperMutate(child);
-            } else {
-                mutate(child);
-            }
+            mutate(child, generation % 50 == 0);
             // Add offspring into population
             population.add(child);
         }
     }
 
     /**
-     * Probabilistically mutate using stored probabilities
+     * Probabilistically mutate using stored probabilities,
+     * if hyperMutate is set to true, perform a more extreme mutation
+     * using five times the mutation rate and a larger value change
      */
-    private void mutate(WeightMatrix individual) {
+    private void mutate(WeightMatrix individual, boolean hyperMutate) {
         List<Double> weights = individual.getWeights();
         List<Double> sigmas = individual.getSigmas();
 
-        IntStream.range(0, weights.size() / 2)
-                .filter(i -> this.random.nextFloat() < this.mutationRate)
-                .parallel()
-                .forEach(i -> weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i)));
-    }
-
-    // TODO: Consolidate these two methods using Consumer or boolean flag
-
-    /**
-     * Perform a more extreme mutation
-     * Uses five times the mutation rate and a large value change
-     */
-    private void hyperMutate(WeightMatrix individual) {
-        List<Double> weights = individual.getWeights();
-        List<Double> sigmas = individual.getSigmas();
+        double rate = hyperMutate ? this.mutationRate * 10 : this.mutationRate;
 
         IntStream.range(0, weights.size() / 2)
-                .filter(i -> this.random.nextFloat() < this.mutationRate / 5)
+                .filter(i -> this.random.nextFloat() < rate)
                 .parallel()
-                .forEach(i -> weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i) * 3));
+                .forEach(i -> weights.set(i, weights.get(i) + this.random.nextGaussian() * sigmas.get(i) * (hyperMutate ? 3 : 1)));
     }
 
     /**
@@ -122,19 +105,23 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         List<Double> childWeights = new ArrayList<>(parents.get(0).getWeights());
         List<Double> childSigmas = new ArrayList<>(parents.get(0).getWeights());
 
+        // Retrieve the weights and sigmas of the parents from their respective WeightMatrix collections
         List<List<Double>> parentWeights = parents.parallelStream().map(WeightMatrix::getWeights).collect(Collectors.toList());
         List<List<Double>> parentSigmas = parents.parallelStream().map(WeightMatrix::getSigmas).collect(Collectors.toList());
 
+        // Iterate over the weights, choosing each gene from a random parent in the parent population provided
         IntStream.range(0, childWeights.size()).parallel().forEach(i -> {
             int parentIndex = random.nextInt(numParents);
             childWeights.set(i, parentWeights.get(parentIndex).get(i));
         });
 
+        // Iterate over the weights, choosing each gene from a random parent in the parent population provided
         IntStream.range(0, childSigmas.size()).parallel().forEach(i -> {
             int parentIndex = random.nextInt(numParents);
             childSigmas.set(i, parentSigmas.get(parentIndex).get(i));
         });
 
+        // Construct and return the child object
         WeightMatrix child = new WeightMatrix(parents.get(0).buildNetwork());
         child.setWeights(childWeights);
         child.setSigmas(childSigmas);
@@ -154,11 +141,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
         // Adjust sigmas
         for (int i = 0; i < populationSize; i++) {
-            if (i < populationSize / 5) {
-                population.get(i).decreaseSigma();
-            } else {
-                population.get(i).increaseSigma();
-            }
+            population.get(i).adjustSigma(i < populationSize / 5);
         }
     }
 }
