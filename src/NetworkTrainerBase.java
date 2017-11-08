@@ -68,7 +68,7 @@ public class NetworkTrainerBase implements INetworkTrainer {
                 .mapToDouble(individual -> validationSet.stream()
                         .mapToDouble(sample -> meanSquaredError(individual.buildNetwork().execute(sample.inputs), sample.outputs)).sum() / validationSet.size())
                 .sum();
-        System.out.println("Generation: " + generation + "\t\t" + "Average Error (validation set): " + error / validationSet.size());
+        System.out.println("Generation: " + generation + "\t\t" + "Validation set error: " + error / validationSet.size());
     }
 
     // Compute the normalized squared error between a set of outputs and their true values
@@ -83,19 +83,5 @@ public class NetworkTrainerBase implements INetworkTrainer {
 
         // Normalize and return error
         return errorSum / (networkOutputs.length * expectedOutputs.length);
-    }
-
-    /**
-     * Convert network into a new weight matrix containing a 1D array of weights
-     */
-    protected WeightMatrix serializeNetwork(INeuralNetwork network) {
-        return new WeightMatrix(network);
-    }
-
-    /**
-     * Return the network represented by the provided weight matrix
-     */
-    protected INeuralNetwork deserializeNetwork(WeightMatrix weightMatrix) {
-        return weightMatrix.buildNetwork();
     }
 }

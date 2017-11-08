@@ -26,6 +26,7 @@ public class NetworkFactory {
     private static final int populationSizeGA = 50;
     private static final double mutationRateGA = 0.01;
     private static final int numParentsGA = 2;
+    private static final int numberOffspringGA = 20;
 
 
     public static INetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
@@ -37,7 +38,7 @@ public class NetworkFactory {
             case ESNetworkTrainer:
                 return new ESNetworkTrainer(populationSizeES, numberParents, numberOffspring, mutationRate);
             case GANetworkTrainer:
-                return new GANetworkTrainer(populationSizeGA, mutationRateGA, numParentsGA);
+                return new GANetworkTrainer(populationSizeGA, mutationRateGA, numParentsGA, numberOffspringGA);
             default:
                 throw new IllegalArgumentException("Invalid trainer type!");
         }

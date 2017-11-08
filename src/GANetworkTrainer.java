@@ -1,17 +1,26 @@
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Implementation of the basic Genetic Algorithm.
+ * Using uniform N parent crossover and steady state replacement of the worst individuals
+ *
+ * @author Keely Weisbeck
+ */
 public class GANetworkTrainer extends NetworkTrainerBase {
 
     private double mutationRate;
     private int numParents;
+    private int numOffspring;
 
-    GANetworkTrainer(int populationSize, double mutationRate, int numParents) {
+    GANetworkTrainer(int populationSize, double mutationRate, int numParents, int numOffspring) {
         super(populationSize);
         this.mutationRate = mutationRate;
         this.numParents = numParents;
+        this.numOffspring = numOffspring;
     }
 
     @Override
@@ -28,64 +37,83 @@ public class GANetworkTrainer extends NetworkTrainerBase {
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
+        evaluatePopulation(population, trainingSet);
+
         //while not converge
         for (int i = 0; i < 500; i++) {
-            //fitness function
-            evaluatePopulation(population, trainingSet);
+            // Perform reproduction, adding offspring to the population
+            generateOffspring(population);
 
-            for (int j = 0; j < populationSize / 2; j++) {
-                //select parents
-                Population parents = selectParents(population, numParents);
-                //apply crossover
-                List<Double> childWeights = crossover(parents);
-                //apply mutation
-                mutation(childWeights, mutationRate);
-                //evaluate fitness of mutation result
-                WeightMatrix child = new WeightMatrix(network, childWeights);
-                population.add(child);
-            }
+            // Evaluate all the individuals in the population
+            evaluatePopulation(population, trainingSet);
+            population.sortByFitness();
+
+            // Remove the weakest individuals to maintain steady state population size
             population = new Population(population.subList(0, populationSize));
 
+            // Validate against the validation set
             validatePopulation(population, validationSet, i);
         }
         return network;
     }
 
-    private WeightMatrix createIndividual(INeuralNetwork network) {
+    /**
+     * Perform the reproductive set.
+     * 1) Parent Selection, 2) Crossover, 3) Mutation
+     */
+    private void generateOffspring(Population population) {
+        IntStream.range(0, this.numOffspring)
+                .parallel()
+                .mapToObj(j -> selectParents(population, numParents))       // Select Parents
+                .map(this::crossover)                                       // Crossover
+                .forEach(child -> {
+                    mutation(child.getWeights(), mutationRate);             // Mutation
+                    population.add(child);
+                });
+    }
+
+    /**
+     * Build a new randomly initialized weight matrix for the supplied network.
+     */
+    protected WeightMatrix createIndividual(INeuralNetwork network) {
         WeightMatrix individual = new WeightMatrix(network);
         List<Double> weights = individual.getWeights();
         // Set weights to random value between [-5.0, 5.0]
         IntStream.range(0, weights.size()).parallel().forEach(i -> weights.set(i, (this.random.nextDouble() * 10) - 5));
 
-        // Set sigmas to random value between [-2.0, 2.0]
-        List<Double> sigmas = IntStream.range(0, weights.size()).parallel().mapToObj(i -> (this.random.nextDouble() * 4) - 2).collect(Collectors.toList());
-        individual.setSigmas(sigmas);
-
         return individual;
     }
 
+    /**
+     * Perform uniform crossover between N parents
+     */
+    protected WeightMatrix crossover(Population parents) {
+        int numParents = parents.size();
+        List<Double> childWeights = new ArrayList<>(parents.get(0).getWeights());
 
-    private List<Double> crossover(Population parents) {
-        List<Double> child = new ArrayList<>();
-        int size = parents.get(0).getWeights().size();
-        for (int i = 0; i < size; i++) {
-            child.add(parents.get(random.nextInt(parents.size())).getWeights().get(i));
-        }
+        // Retrieve the weights and sigmas of the parents from their respective WeightMatrix collections
+        List<List<Double>> parentWeights = parents.parallelStream().map(WeightMatrix::getWeights).collect(Collectors.toList());
+
+        // Iterate over the weights, choosing each gene from a random parent in the parent population provided
+        IntStream.range(0, childWeights.size()).parallel().forEach(i -> {
+            int parentIndex = random.nextInt(numParents);
+            childWeights.set(i, parentWeights.get(parentIndex).get(i));
+        });
+
+        // Construct and return the child object
+        WeightMatrix child = new WeightMatrix(parents.get(0).buildNetwork());
+        child.setWeights(childWeights);
         return child;
     }
 
-
+    /**
+     * Iterate over each of the genes in the offspring, probabilistically modifying values according to
+     * a gaussian distribution N(0,1)
+     */
     private void mutation(List<Double> offspring, double mutationRate) {
-        for (int i = 0; i < offspring.size(); i++) {
-            double gene = offspring.get(i);
-            if (random.nextDouble() <= mutationRate) {
-                offspring.set(i, gene + random.nextGaussian());
-            }
-        }
-    }
-
-    private void rank(Population population) {
-        //sort the population by fitness
-        population.sortByFitness();
+        IntStream.range(0, offspring.size())
+                .filter(i -> random.nextDouble() < mutationRate)
+                .parallel()
+                .forEach(i -> offspring.set(i, offspring.get(i) + random.nextGaussian()));
     }
 }
