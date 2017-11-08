@@ -12,10 +12,14 @@ public class NetworkFactory {
     private static final int epochs = 50000;
 
     /* Evolution Strategy Parameters */
-    private static final int populationSize = 80;
+    private static final int populationSizeES = 80;
     private static final int numberOffspring = 5;
     private static final int numberParents = 3;
     private static final double mutationRate = 0.01;
+
+    /* Differential Evolution Parameters */
+    private static final int populationSizeDE = 100;
+    private static final double beta = 0.5;
 
 
     public static INetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
@@ -23,9 +27,9 @@ public class NetworkFactory {
             case BPNetworkTrainer:
                 return new BPNetworkTrainer(learningRate, momentum, batchSize, epochs);
             case DENetworkTrainer:
-                return new DENetworkTrainer(populationSize);
+                return new DENetworkTrainer(populationSizeDE, beta);
             case ESNetworkTrainer:
-                return new ESNetworkTrainer(populationSize, numberParents, numberOffspring, mutationRate);
+                return new ESNetworkTrainer(populationSizeES, numberParents, numberOffspring, mutationRate);
             case GANetworkTrainer:
                 return new GANetworkTrainer();
             default:
