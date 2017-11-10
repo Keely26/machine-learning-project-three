@@ -65,13 +65,14 @@ public class NetworkTrainerBase implements INetworkTrainer {
         individual.setFitness(fitness);
     }
 
-    protected void validatePopulation(Population population, Dataset validationSet, int generation) {
+    protected double validatePopulation(Population population, Dataset validationSet, int generation) {
         double error = population
                 .parallelStream()
                 .mapToDouble(individual -> validationSet.stream()
                         .mapToDouble(sample -> meanSquaredError(individual.buildNetwork().execute(sample.inputs), sample.outputs)).sum() / validationSet.size())
                 .sum();
-      //  System.out.println("Generation: " + generation + "\t\t" + "Validation set error: " + error / validationSet.size());
+        System.out.println("Generation: " + generation + "\t\t" + "Validation set error: " + error / validationSet.size());
+        return error;
     }
 
     // Compute the normalized squared error between a set of outputs and their true values

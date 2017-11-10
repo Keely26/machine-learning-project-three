@@ -7,7 +7,6 @@ import java.util.stream.IntStream;
 public class DENetworkTrainer extends NetworkTrainerBase {
 
     private double beta;
-
     private final List<Integer> indexList;
 
     DENetworkTrainer(int populationSize, double beta) {
@@ -21,6 +20,7 @@ public class DENetworkTrainer extends NetworkTrainerBase {
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
+        double startTime = System.nanoTime();
 
         // Initialize new population
         Population population = IntStream.range(0, populationSize)
@@ -33,11 +33,24 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
-        for (int generation = 0; generation < 50; generation++) {
+        int cutoffCounter = 0;
+        double runningAvg = 0.0;
+        for (int generation = 0; generation < 200; generation++) {
             population = createNextGeneration(network, population, trainingSet);
-            validatePopulation(population, validationSet, generation);
+
+            double result = validatePopulation(population, validationSet, generation);
+            runningAvg = ((runningAvg * 4) + result) / 5;
+            if (Math.abs(result - runningAvg) / result < 0.01) {
+                cutoffCounter++;
+            } else {
+                cutoffCounter = 0;
+            }
+            if (cutoffCounter > 10) {
+                break;
+            }
         }
 
+        System.out.println("DE convergence time: " + (System.nanoTime() - startTime) / 1000000000.0 + " seconds.");
         return population.getMostFit().buildNetwork();
     }
 

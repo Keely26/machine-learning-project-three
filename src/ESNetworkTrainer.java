@@ -35,7 +35,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 200; i++) {
             // Perform reproductive step, adding children into population
             generateOffspring(population, i);
 
