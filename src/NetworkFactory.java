@@ -2,14 +2,14 @@
 public class NetworkFactory {
 
     /* MultiLayer Perceptron Parameters */
-    private static final int[] layers = new int[]{9, 15, 10, 1};    // Size of each layer
+    private static final int[] layers = new int[]{9, 5, 5, 1};    // Size of each layer
     private static final IActivationFunction activationFunction = new HyperbolicTangent();
 
     /* Backpropagation Parameters */
     private static final int batchSize = 5;
     private static final double learningRate = 0.2;
     private static final double momentum = 0.0;
-    private static final int epochs = 50000;
+    private static final int epochs = 50;
 
     /* Evolution Strategy Parameters */
     private static final int populationSizeES = 80;

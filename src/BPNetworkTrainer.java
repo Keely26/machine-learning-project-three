@@ -125,9 +125,9 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
 
     // Compute the average error over the validation set and print to console
     private void validate(INeuralNetwork network, Dataset validationSet, int epoch) {
-        System.out.println("Epoch: " + epoch + "\t\tValidation Set Error: " + validationSet
-                .parallelStream()
-                .mapToDouble(sample -> this.meanSquaredError(network.execute(sample.inputs), sample.outputs))
-                .sum() / validationSet.size());
+       // System.out.println("Epoch: " + epoch + "\t\tValidation Set Error: " + validationSet
+//                .parallelStream()
+//                .mapToDouble(sample -> this.meanSquaredError(network.execute(sample.inputs), sample.outputs))
+//                .sum() / validationSet.size());
     }
 }

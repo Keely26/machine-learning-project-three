@@ -47,7 +47,10 @@ public class NetworkTrainerBase implements INetworkTrainer {
     }
 
     protected void evaluatePopulation(Population population, Dataset trainingData) {
-        population.parallelStream().forEach((WeightMatrix individual) -> evaluateIndividual(individual, trainingData));
+        population.parallelStream().forEach((WeightMatrix individual) -> {
+            //System.out.println(individual);
+            evaluateIndividual(individual, trainingData);
+        });
     }
 
     protected void evaluateIndividual(WeightMatrix individual, Dataset trainingData) {
@@ -68,7 +71,7 @@ public class NetworkTrainerBase implements INetworkTrainer {
                 .mapToDouble(individual -> validationSet.stream()
                         .mapToDouble(sample -> meanSquaredError(individual.buildNetwork().execute(sample.inputs), sample.outputs)).sum() / validationSet.size())
                 .sum();
-        System.out.println("Generation: " + generation + "\t\t" + "Validation set error: " + error / validationSet.size());
+      //  System.out.println("Generation: " + generation + "\t\t" + "Validation set error: " + error / validationSet.size());
     }
 
     // Compute the normalized squared error between a set of outputs and their true values

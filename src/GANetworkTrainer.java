@@ -1,3 +1,5 @@
+import com.sun.org.apache.bcel.internal.generic.POP;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +42,7 @@ public class GANetworkTrainer extends NetworkTrainerBase {
         evaluatePopulation(population, trainingSet);
 
         //while not converge
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 50; i++) {
             // Perform reproduction, adding offspring to the population
             generateOffspring(population);
 
@@ -62,14 +64,12 @@ public class GANetworkTrainer extends NetworkTrainerBase {
      * 1) Parent Selection, 2) Crossover, 3) Mutation
      */
     private void generateOffspring(Population population) {
-        IntStream.range(0, this.numOffspring)
-                .parallel()
-                .mapToObj(j -> selectParents(population, numParents))       // Select Parents
-                .map(this::crossover)                                       // Crossover
-                .forEach(child -> {
-                    mutation(child.getWeights(), mutationRate);             // Mutation
-                    population.add(child);
-                });
+        for (int i = 0; i < this.numOffspring; i++) {
+            Population parents = selectParents(population, numParents);
+            WeightMatrix child = crossover(parents);
+            mutation(child.getWeights());
+            population.add(child);
+        }
     }
 
     /**
@@ -110,7 +110,7 @@ public class GANetworkTrainer extends NetworkTrainerBase {
      * Iterate over each of the genes in the offspring, probabilistically modifying values according to
      * a gaussian distribution N(0,1)
      */
-    private void mutation(List<Double> offspring, double mutationRate) {
+    private void mutation(List<Double> offspring) {
         IntStream.range(0, offspring.size())
                 .filter(i -> random.nextDouble() < mutationRate)
                 .parallel()

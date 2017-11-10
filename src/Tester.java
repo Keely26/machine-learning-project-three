@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -13,52 +14,101 @@ import java.util.stream.IntStream;
  */
 public class Tester {
 
+
     public static void main(String[] args) {
         INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
-        INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer);
 
-        Dataset dataSet = DatasetFactory.buildDataSet("tic-tac-toe");
+        INetworkTrainer GA = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer);
+        INetworkTrainer ES = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.ESNetworkTrainer);
+        INetworkTrainer DE = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.DENetworkTrainer);
+        INetworkTrainer BP = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
 
-        assert dataSet != null;
+        List<INetworkTrainer> trainers = new ArrayList<>();
+        trainers.add(GA);
+        trainers.add(ES);
+        trainers.add(DE);
+        trainers.add(BP);
 
-        trainer.train(MLP, dataSet);
+        //Dataset trainingSet = DatasetFactory.buildDataSet("ecoli");
+        //Dataset trainingSet = DatasetFactory.buildDataSet("energy");
+        Dataset trainingSet = DatasetFactory.buildDataSet("tic-tac-toe");
+        //Dataset trainingSet = DatasetFactory.buildDataSet("winequality");
+        //Dataset trainingSet = DatasetFactory.buildDataSet("yeast");
 
-        //   crossValidate();
+
+        assert trainingSet != null;
+
+        //trainer.train(MLP, trainingSet);
+
+        crossValidate(trainers, trainingSet, MLP);
     }
 
     // Execute a 5x2 cross validation for both networks computing the mean and standard deviation of their errors
     public static void crossValidate(List<INetworkTrainer> trainers, Dataset dataset, INeuralNetwork network) {
 
+        Dataset dataSet = DatasetFactory.buildDataSet("tic-tac-toe");
 
-        List<Double> ffnErrors = new ArrayList<>();
+        List<Double> ESErrors = new ArrayList<>();
+        List<Double> DEErrors = new ArrayList<>();
+        List<Double> GAErrors = new ArrayList<>();
+        List<Double> BPErrors = new ArrayList<>();
 
         for (int k = 0; k < 5; k++) {
-            dataset.shuffle();
+            //System.setOut();
+            Collections.shuffle(dataSet);
             Dataset testSet = dataset.getTestingSet();
             Dataset trainSet = dataset.getTrainingSet();
 
-            List<Sample> set2 = dataset.subList((dataset.size() / 2), dataset.size());
+            System.out.println("trainer: " + trainers.get(0));
+            GAErrors.addAll(computeFold(trainSet, testSet, network, trainers.get(0)));
 
-            //    FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
-            //     RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
+            network = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
+            System.out.println("trainer: " + trainers.get(1));
+            ESErrors.addAll(computeFold(trainSet, testSet, network, trainers.get(1)));
 
-            //    ffnErrors.addAll(computeFold(set1, set2, FFN));
-            //       rbfErrors.addAll(computeFold(set1, set2, RBN));
+            network = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
+            System.out.println("trainer: " + trainers.get(2));
+            DEErrors.addAll(computeFold(trainSet, testSet, network, trainers.get(2)));
 
-            //   FFN = buildNewNetwork(NetworkType.FeedForwardNetwork);
-            //   RBN = buildNewNetwork(NetworkType.RadialBasisNetwork);
+            network = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
+            System.out.println("trainer: " + trainers.get(3));
+            BPErrors.addAll(computeFold(trainSet, testSet, network, trainers.get(3)));
 
-            //  ffnErrors.addAll(computeFold(set2, set1, FFN));
-            //   rbfErrors.addAll(computeFold(set2, set1, RBN));
+
+            //training set and test set are swapped
+            network = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
+            System.out.println("S trainer: " + trainers.get(0));
+            GAErrors.addAll(computeFold(testSet, trainSet, network, trainers.get(0)));
+
+            network = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
+            System.out.println("S trainer: " + trainers.get(1));
+            ESErrors.addAll(computeFold(testSet, trainSet, network, trainers.get(1)));
+
+            network = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
+            System.out.println("S trainer: " + trainers.get(2));
+            DEErrors.addAll(computeFold(testSet, trainSet, network, trainers.get(2)));
+
+            network = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
+            System.out.println("S trainer: " + trainers.get(3));
+            BPErrors.addAll(computeFold(testSet, trainSet, network, trainers.get(3)));
         }
 
-        double mean = calcMean(ffnErrors);
-        double SD = calcStandardDeviation(mean, ffnErrors);
-        printStats(mean, SD, "Feed Forward");
+        double mean = calcMean(GAErrors);
+        double SD = calcStandardDeviation(mean, GAErrors);
+        printStats(mean, SD, "GA");
 
-        //  mean = calcMean(rbfErrors);
-        // SD = calcStandardDeviation(mean, rbfErrors);
-        printStats(mean, SD, "Radial Basis");
+        mean = calcMean(ESErrors);
+        SD = calcStandardDeviation(mean, ESErrors);
+        printStats(mean, SD, "ES");
+
+        mean = calcMean(DEErrors);
+        SD = calcStandardDeviation(mean, DEErrors);
+        printStats(mean, SD, "DE");
+
+        mean = calcMean(BPErrors);
+        SD = calcStandardDeviation(mean, BPErrors);
+        printStats(mean, SD, "BP");
+
     }
 
     private static List<Double> computeFold(Dataset trainSet, Dataset testSet, INeuralNetwork network, INetworkTrainer trainer) {
@@ -100,6 +150,7 @@ public class Tester {
 
     // Writes the mean ans standard deviation to std out
     private static void printStats(double mean, double standardDeviation, String networkType) {
+        System.out.println(" ");
         System.out.println("Network type: " + networkType);
         System.out.println("-------------------------------");
         System.out.println("Mean error:         " + mean);
