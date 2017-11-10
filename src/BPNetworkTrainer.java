@@ -8,26 +8,28 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
     private double learningRate;
     private double momentum;
     private int batchSize;
-    private int epochs;
 
-    BPNetworkTrainer(double learningRate, double momentum, int batchSize, int epochs) {
+    private int bestIteration;
+    private double bestError = Double.MAX_VALUE;
+    private WeightMatrix bestNetwork;
+
+    BPNetworkTrainer(double learningRate, double momentum, int batchSize) {
         super(0);
         this.learningRate = learningRate;
         this.momentum = momentum;
         this.batchSize = batchSize;
-        this.epochs = epochs;
     }
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
-
+        startTimer();
         // Split training set into training and validation sets
         Collections.shuffle(samples);
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
-        // Iterate over the defined number of epochs
-        for (int i = 0; i < epochs; i++) {
+        int iteration = 0;
+        while (shouldContinue(validate(network, validationSet, iteration), iteration, network)) {
             for (Sample sample : trainingSet) {
                 // Forward propagate each sample through the network
                 this.execute(network, sample.inputs);
@@ -36,16 +38,31 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
                 this.backPropagate(network, sample.outputs);
 
                 // Only apply weight updates once per batch
-                if (i % batchSize == 0) {
+                if (iteration % batchSize == 0) {
                     this.updateWeights(network, sample.inputs);
                     this.resetWeightDeltas(network);
                 }
             }
-
-            validate(network, validationSet, i);
+            iteration++;
         }
 
-        return network;
+        printConvergence(NetworkTrainerType.BPNetworkTrainer, network);
+        return bestNetwork.buildNetwork();
+    }
+
+    protected boolean shouldContinue(double validationError, int iteration, INeuralNetwork network) {
+        if (validationError < bestError) {
+            bestIteration = iteration;
+            bestError = validationError;
+            bestNetwork = network.constructWeightMatrix();
+        }
+        runningAvg = ((runningAvg * 4) + validationError) / 5;
+        if (Math.abs(validationError - runningAvg) / validationError < 0.00001) {
+            cutoffCounter++;
+        } else {
+            cutoffCounter = 0;
+        }
+        return iteration < 10000 && cutoffCounter < 10;
     }
 
     /**
@@ -124,10 +141,14 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
     }
 
     // Compute the average error over the validation set and print to console
-    private void validate(INeuralNetwork network, Dataset validationSet, int epoch) {
-       // System.out.println("Epoch: " + epoch + "\t\tValidation Set Error: " + validationSet
-//                .parallelStream()
-//                .mapToDouble(sample -> this.meanSquaredError(network.execute(sample.inputs), sample.outputs))
-//                .sum() / validationSet.size());
+    private double validate(INeuralNetwork network, Dataset validationSet, int epoch) {
+        double error = validationSet
+                .parallelStream()
+                .mapToDouble(sample -> this.meanSquaredError(network.execute(sample.inputs), sample.outputs))
+                .sum() / validationSet.size();
+        if (epoch % 10 == 0) {
+            System.out.println("Epoch: " + epoch + "\t\tValidation Set Error: " + error);
+        }
+        return error;
     }
 }

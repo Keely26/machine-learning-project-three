@@ -8,8 +8,9 @@ public class NetworkTrainerBase implements INetworkTrainer {
     protected final Random random = new Random(System.nanoTime());
     protected final int populationSize;
 
-    private int cutoffCounter = 0;
-    private double runningAvg = 0.0;
+    protected int cutoffCounter = 0;
+    protected double runningAvg = 0.0;
+    private double startTime;
 
     NetworkTrainerBase(int populationSize) {
         this.populationSize = populationSize;
@@ -92,16 +93,44 @@ public class NetworkTrainerBase implements INetworkTrainer {
         return errorSum / (networkOutputs.length * expectedOutputs.length);
     }
 
+    protected void startTimer() {
+        this.startTime = System.nanoTime();
+    }
+
     /**
-     * Terminate if the average change in performance over the last 5 generations is less than 1%
+     * Terminate if the average change in performance over the last 5 generations is less than 0.5%
      */
-    protected boolean shouldContinue(double validationError) {
+    protected boolean shouldContinue(double validationError, int generation) {
         runningAvg = ((runningAvg * 4) + validationError) / 5;
-        if (Math.abs(validationError - runningAvg) / validationError < 0.01) {
+        if (Math.abs(validationError - runningAvg) / validationError < 0.005) {
             cutoffCounter++;
         } else {
             cutoffCounter = 0;
         }
-        return cutoffCounter < 10;
+        return generation < 5000 && cutoffCounter < 10;
+    }
+
+    protected void printConvergence(NetworkTrainerType type, INeuralNetwork network) {
+        double convergenceTime = (System.nanoTime() - startTime) / 1000000000.0;
+        network.setConvergence(convergenceTime);
+        StringBuilder output = new StringBuilder();
+        output.append("\n");
+        switch (type) {
+            case DENetworkTrainer:
+                output.append("Differential Evolution Convergence Time: ");
+                break;
+            case GANetworkTrainer:
+                output.append("Genetic Algorithm Convergence Time: ");
+                break;
+            case ESNetworkTrainer:
+                output.append("Evolution Strategy Convergence Time: ");
+                break;
+            case BPNetworkTrainer:
+                output.append("Backpropagation Convergence Time: ");
+                break;
+        }
+        output.append(convergenceTime);
+        output.append(" seconds.");
+        System.out.println(output.toString());
     }
 }

@@ -16,8 +16,8 @@ public class Tester {
 
 
     public static void main(String[] args) {
-
-        List<INetworkTrainer> trainers = new ArrayList<>();
+//
+//        List<INetworkTrainer> trainers = new ArrayList<>();
 //        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer));
 //        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.ESNetworkTrainer));
 //        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.DENetworkTrainer));
@@ -33,10 +33,10 @@ public class Tester {
         assert trainingSet != null;
 
         INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
-        INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.DENetworkTrainer);
+        INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
         trainer.train(MLP, trainingSet);
 
-      //  crossValidate(trainers, trainingSet);
+//        crossValidate(trainers, trainingSet);
     }
 
     // Execute a 5x2 cross validation for both networks computing the mean and standard deviation of their errors

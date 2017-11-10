@@ -24,6 +24,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
+        startTimer();
         // Generate initial population
         Population population = IntStream.range(0, populationSize)
                 .parallel()
@@ -35,19 +36,20 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
-        for (int i = 0; i < 200; i++) {
+        int generation = 0;
+        while(shouldContinue(validatePopulation(population, validationSet, generation), generation)) {
             // Perform reproductive step, adding children into population
-            generateOffspring(population, i);
+            generateOffspring(population, generation);
 
             // Remove the least fit individuals to maintain population size
             survivalOfTheFittest(population, trainingSet);
-
-            // Print the performance of population run against the validation set // TODO: Use this is an early cutoff somehow
-            validatePopulation(population, validationSet, i);
+            generation++;
         }
 
         // Return the best network
-        return population.getMostFit().buildNetwork();
+        INeuralNetwork bestNetwork = population.getMostFit().buildNetwork();
+        printConvergence(NetworkTrainerType.ESNetworkTrainer, bestNetwork);
+        return bestNetwork;
     }
 
     /**

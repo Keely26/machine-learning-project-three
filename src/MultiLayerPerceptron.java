@@ -6,6 +6,8 @@ public class MultiLayerPerceptron implements INeuralNetwork {
     private List<Layer> layers;
     private final IActivationFunction activationFunction;
 
+    private double convergenceTime;
+
     MultiLayerPerceptron(IActivationFunction activationFunction, int[] networkDimensions) {
         this.activationFunction = activationFunction;
         this.initializeNetwork(networkDimensions);
@@ -35,6 +37,16 @@ public class MultiLayerPerceptron implements INeuralNetwork {
     @Override
     public int getSize() {
         return this.layers.size();
+    }
+
+    @Override
+    public double getConvergence() {
+        return this.convergenceTime;
+    }
+
+    @Override
+    public void setConvergence(double convergenceTime) {
+        this.convergenceTime = convergenceTime;
     }
 
     @Override

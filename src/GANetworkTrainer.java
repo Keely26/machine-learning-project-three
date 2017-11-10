@@ -1,4 +1,3 @@
-import com.sun.org.apache.bcel.internal.generic.POP;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +26,7 @@ public class GANetworkTrainer extends NetworkTrainerBase {
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
-
+        startTimer();
         //initialize population
         Population population = new Population();
         for (int i = 0; i < populationSize; i++) {
@@ -39,11 +38,8 @@ public class GANetworkTrainer extends NetworkTrainerBase {
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
-        evaluatePopulation(population, trainingSet);
-
-        //while not converge
-        for (int i = 0; i < 50; i++) {
-            // Perform reproduction, adding offspring to the population
+        int generation = 0;
+        while(shouldContinue(validatePopulation(population, validationSet, generation), generation)) {
             generateOffspring(population);
 
             // Evaluate all the individuals in the population
@@ -52,11 +48,12 @@ public class GANetworkTrainer extends NetworkTrainerBase {
 
             // Remove the weakest individuals to maintain steady state population size
             population = new Population(population.subList(0, populationSize));
-
-            // Validate against the validation set
-            validatePopulation(population, validationSet, i);
+            generation++;
         }
-        return network;
+
+        INeuralNetwork bestNetwork = population.getMostFit().buildNetwork();
+        printConvergence(NetworkTrainerType.GANetworkTrainer, bestNetwork);
+        return bestNetwork;
     }
 
     /**

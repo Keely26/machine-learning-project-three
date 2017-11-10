@@ -20,8 +20,7 @@ public class DENetworkTrainer extends NetworkTrainerBase {
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
-        double startTime = System.nanoTime();
-
+        startTimer();
         // Initialize new population
         Population population = IntStream.range(0, populationSize)
                 .parallel()
@@ -34,13 +33,14 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
         int generation = 0;
-        while (shouldContinue(validatePopulation(population, validationSet, generation))) {
+        while (shouldContinue(validatePopulation(population, validationSet, generation), generation)) {
             population = createNextGeneration(network, population, trainingSet);
             generation++;
         }
 
-        System.out.println("DE convergence time: " + (System.nanoTime() - startTime) / 1000000000.0 + " seconds.");
-        return population.getMostFit().buildNetwork();
+        INeuralNetwork bestNetwork = population.getMostFit().buildNetwork();
+        printConvergence(NetworkTrainerType.DENetworkTrainer, bestNetwork);
+        return bestNetwork;
     }
 
     /**
