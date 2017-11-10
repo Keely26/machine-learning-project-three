@@ -14,8 +14,8 @@ public class DatasetFactory {
     private static final String CSV = ".csv";
     private static final Pattern COMMA_DELIMITER = Pattern.compile(", ");
 
-    public static Dataset buildDataSet(String fileName) {
-        File file = new File(PATH.concat(fileName).concat(CSV));
+    public static Dataset buildDataSet(DatasetType type) {
+        File file = new File(PATH.concat(type.toString()).concat(CSV));
         List<String> lines = Objects.requireNonNull(getFileStream(file)).collect(Collectors.toList());
 
         String[] header = COMMA_DELIMITER.split(lines.remove(0));

@@ -2,7 +2,7 @@
 public class NetworkFactory {
 
     /* MultiLayer Perceptron Parameters */
-    private static final int[] layers = new int[]{9, 5, 5, 1};    // Size of each layer
+    private static final int[] layers = new int[]{7, 5, 5, 1};    // Size of each layer
     private static final IActivationFunction activationFunction = new HyperbolicTangent();
 
     /* Backpropagation Parameters */

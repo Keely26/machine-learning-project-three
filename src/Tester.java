@@ -16,44 +16,36 @@ public class Tester {
 
 
     public static void main(String[] args) {
-//
-//        List<INetworkTrainer> trainers = new ArrayList<>();
-//        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer));
-//        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.ESNetworkTrainer));
-//        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.DENetworkTrainer));
-//        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer));
-
-        //Dataset trainingSet = DatasetFactory.buildDataSet("ecoli");
-        //Dataset trainingSet = DatasetFactory.buildDataSet("energy");
-        Dataset trainingSet = DatasetFactory.buildDataSet("tic-tac-toe");
-        //Dataset trainingSet = DatasetFactory.buildDataSet("winequality");
-        //Dataset trainingSet = DatasetFactory.buildDataSet("yeast");
-
-
-        assert trainingSet != null;
-
-        INeuralNetwork MLP = NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron);
-        INetworkTrainer trainer = NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer);
-        trainer.train(MLP, trainingSet);
-
-//        crossValidate(trainers, trainingSet);
+        Dataset dataset = DatasetFactory.buildDataSet(DatasetType.Ecoli);
+        testOne(dataset, NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer));
+       // testAll(dataset);
     }
+
+    private static void testOne(Dataset dataset, INetworkTrainer trainer) {
+        trainer.train(NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron), dataset);
+    }
+
+    private static void testAll(Dataset dataset) {
+        List<INetworkTrainer> trainers = new ArrayList<>();
+        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer));
+        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.ESNetworkTrainer));
+        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.DENetworkTrainer));
+        trainers.add(NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer));
+        crossValidate(trainers, dataset);
+    }
+
 
     // Execute a 5x2 cross validation for both networks computing the mean and standard deviation of their errors
     public static void crossValidate(List<INetworkTrainer> trainers, Dataset dataset) {
-
-        Dataset dataSet = DatasetFactory.buildDataSet("tic-tac-toe");
-
         List<Double> ESErrors = new ArrayList<>();
         List<Double> DEErrors = new ArrayList<>();
         List<Double> GAErrors = new ArrayList<>();
         List<Double> BPErrors = new ArrayList<>();
 
         for (int k = 0; k < 5; k++) {
-            Collections.shuffle(dataSet);
+            Collections.shuffle(dataset);
             Dataset testSet = dataset.getTestingSet();
             Dataset trainSet = dataset.getTrainingSet();
-
 
             GAErrors.addAll(computeFold(trainSet, testSet, NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron), trainers.get(0)));
             ESErrors.addAll(computeFold(trainSet, testSet, NetworkFactory.buildNewNetwork(NetworkType.MultiLayerPerceptron), trainers.get(1)));
@@ -82,7 +74,6 @@ public class Tester {
         mean = calcMean(BPErrors);
         SD = calcStandardDeviation(mean, BPErrors);
         printStats(mean, SD, "BP");
-
     }
 
     private static List<Double> computeFold(Dataset trainSet, Dataset testSet, INeuralNetwork network, INetworkTrainer trainer) {
