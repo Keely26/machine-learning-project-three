@@ -33,21 +33,10 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
-        int cutoffCounter = 0;
-        double runningAvg = 0.0;
-        for (int generation = 0; generation < 200; generation++) {
+        int generation = 0;
+        while (shouldContinue(validatePopulation(population, validationSet, generation))) {
             population = createNextGeneration(network, population, trainingSet);
-
-            double result = validatePopulation(population, validationSet, generation);
-            runningAvg = ((runningAvg * 4) + result) / 5;
-            if (Math.abs(result - runningAvg) / result < 0.01) {
-                cutoffCounter++;
-            } else {
-                cutoffCounter = 0;
-            }
-            if (cutoffCounter > 10) {
-                break;
-            }
+            generation++;
         }
 
         System.out.println("DE convergence time: " + (System.nanoTime() - startTime) / 1000000000.0 + " seconds.");

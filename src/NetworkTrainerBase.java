@@ -8,6 +8,9 @@ public class NetworkTrainerBase implements INetworkTrainer {
     protected final Random random = new Random(System.nanoTime());
     protected final int populationSize;
 
+    private int cutoffCounter = 0;
+    private double runningAvg = 0.0;
+
     NetworkTrainerBase(int populationSize) {
         this.populationSize = populationSize;
     }
@@ -87,5 +90,18 @@ public class NetworkTrainerBase implements INetworkTrainer {
 
         // Normalize and return error
         return errorSum / (networkOutputs.length * expectedOutputs.length);
+    }
+
+    /**
+     * Terminate if the average change in performance over the last 5 generations is less than 1%
+     */
+    protected boolean shouldContinue(double validationError) {
+        runningAvg = ((runningAvg * 4) + validationError) / 5;
+        if (Math.abs(validationError - runningAvg) / validationError < 0.01) {
+            cutoffCounter++;
+        } else {
+            cutoffCounter = 0;
+        }
+        return cutoffCounter < 10;
     }
 }
