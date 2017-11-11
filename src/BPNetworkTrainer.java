@@ -62,7 +62,7 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
         } else {
             cutoffCounter = 0;
         }
-        return iteration < 10000 && cutoffCounter < 10;
+        return iteration < 10000 && cutoffCounter < 500;
     }
 
     /**

@@ -6,12 +6,15 @@ import java.util.stream.IntStream;
 
 public class DENetworkTrainer extends NetworkTrainerBase {
 
-    private double beta;
+    private final double beta;
+    private final double crossoverRate;
+
     private final List<Integer> indexList;
 
-    DENetworkTrainer(int populationSize, double beta) {
+    DENetworkTrainer(int populationSize, double beta, double crossoverRate) {
         super(populationSize);
         this.beta = beta;
+        this.crossoverRate = crossoverRate;
         indexList = new ArrayList<>(populationSize);
         for (int i = 0; i < populationSize; i++) {
             indexList.add(i);
@@ -66,10 +69,13 @@ public class DENetworkTrainer extends NetworkTrainerBase {
             evaluateIndividual(parent, trainingSet);
             evaluateIndividual(child, trainingSet);
 
+            //population.add(child);
+            //  nextGeneration.add(child);
             nextGeneration.add(parent.getFitness() < child.getFitness() ? parent : child);
         }
-
-        return nextGeneration;
+//        evaluatePopulation(population, trainingSet);
+//        population.sortByFitness();
+        return nextGeneration;//new Population(new ArrayList<>(population.subList(0, populationSize)));
     }
 
     private List<Double> createChild(Population population, int parentIndex) {
@@ -87,9 +93,14 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         List<Double> weightsB = auxiliaryParents.get(1).getWeights();
         List<Double> weightsC = auxiliaryParents.get(2).getWeights();
 
-        return IntStream.range(0, weightsA.size())
-                .parallel()
-                .mapToObj(i -> weightsA.get(i) + (beta * (weightsB.get(i) - weightsC.get(i))))
-                .collect(Collectors.toList());
+        List<Double> childWeights = new ArrayList<>();
+        for (int i = 0; i < weightsA.size(); i++) {
+            if (random.nextDouble() < this.crossoverRate) {
+                childWeights.add(weightsA.get(i) + (beta * (weightsB.get(i) - weightsC.get(i))));
+            } else {
+                childWeights.add(weightsA.get(i));
+            }
+        }
+        return childWeights;
     }
 }

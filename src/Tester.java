@@ -1,6 +1,5 @@
 
-import java.io.BufferedWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -15,10 +14,11 @@ import java.util.stream.IntStream;
 public class Tester {
 
 
-    public static void main(String[] args) {
-        Dataset dataset = DatasetFactory.buildDataSet(DatasetType.Ecoli);
-        testOne(dataset, NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer));
-       // testAll(dataset);
+    public static void main(String[] args) throws FileNotFoundException {
+        System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream(DatasetType.Wine.name().concat(".txt"))), true));
+        Dataset dataset = DatasetFactory.buildDataSet(DatasetType.Wine);
+        //testOne(dataset, NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer));
+        testAll(dataset);
     }
 
     private static void testOne(Dataset dataset, INetworkTrainer trainer) {
@@ -116,7 +116,7 @@ public class Tester {
     // Writes the mean ans standard deviation to std out
     private static void printStats(double mean, double standardDeviation, String networkType) {
         System.out.println(" ");
-        System.out.println("Network type: " + networkType);
+        System.out.println("Trainer Type: " + networkType);
         System.out.println("-------------------------------");
         System.out.println("Mean error:         " + mean);
         System.out.println("Standard Deviation: " + standardDeviation);
