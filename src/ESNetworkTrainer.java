@@ -47,7 +47,7 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
 
         // Return the best network
         INeuralNetwork best = bestNetwork.buildNetwork();
-        printConvergence(NetworkTrainerType.DENetworkTrainer, best);
+        printConvergence(NetworkTrainerType.ESNetworkTrainer, best);
         return best;
     }
 

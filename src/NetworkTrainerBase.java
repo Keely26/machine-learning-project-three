@@ -151,7 +151,7 @@ public class NetworkTrainerBase implements INetworkTrainer {
                 break;
         }
         output.append(convergenceTime);
-        output.append(" seconds.");
+        output.append(" seconds.\n");
         System.out.println(output.toString());
     }
 }

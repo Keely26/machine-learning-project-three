@@ -50,7 +50,7 @@ public class GANetworkTrainer extends NetworkTrainerBase {
         }
 
         INeuralNetwork best = bestNetwork.buildNetwork();
-        printConvergence(NetworkTrainerType.DENetworkTrainer, best);
+        printConvergence(NetworkTrainerType.GANetworkTrainer, best);
         return best;
     }
 

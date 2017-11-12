@@ -66,12 +66,20 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
         }
         runningAvg = ((runningAvg * 9) + validationError) / 10;
         // Increment counter if the error has seen less than 1/10000 improvement
-        if ((runningAvg - validationError) / validationError < 0.0001) {
+        if ((runningAvg - validationError) / validationError < 0.000001) {
             cutoffCounter++;
         } else {
             cutoffCounter = 0;
         }
-        return iteration < 10000 && cutoffCounter < 500;
+        if (iteration < 3000) {
+            return true;
+        } else {
+            if (iteration > 20000 || cutoffCounter > 500) {
+                System.out.println(cutoffCounter);
+                return false;
+            }
+            return true;
+        }
     }
 
     /**

@@ -11,13 +11,13 @@ import java.util.stream.IntStream;
  */
 public class Tester {
 
-    private static final DatasetType datasetType = DatasetType.Yeast;
+    private static final DatasetType datasetType = DatasetType.Energy;
 
     public static void main(String[] args) {
-        setFileOut();
+        //setFileOut();
         Dataset dataset = DatasetFactory.buildDataSet(datasetType);
-        //testOne(dataset, NetworkFactory.buildNetworkTrainer(NetworkTrainerType.GANetworkTrainer));
-        testAll(dataset);
+        testOne(dataset, NetworkFactory.buildNetworkTrainer(NetworkTrainerType.BPNetworkTrainer));
+       // testAll(dataset);
     }
 
     private static void testOne(Dataset dataset, INetworkTrainer trainer) {
