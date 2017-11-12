@@ -1,6 +1,4 @@
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,12 +32,12 @@ public class GANetworkTrainer extends NetworkTrainerBase {
         }
 
         // Split training set into training and validation sets
-        Collections.shuffle(samples);
+        samples.shuffle();
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
         int generation = 0;
-        while(shouldContinue(validatePopulation(population, validationSet, generation), generation)) {
+        while (shouldContinue(validatePopulation(population, validationSet, generation), generation, network)) {
             generateOffspring(population);
 
             // Evaluate all the individuals in the population
@@ -51,9 +49,9 @@ public class GANetworkTrainer extends NetworkTrainerBase {
             generation++;
         }
 
-        INeuralNetwork bestNetwork = population.getMostFit().buildNetwork();
-        printConvergence(NetworkTrainerType.GANetworkTrainer, bestNetwork);
-        return bestNetwork;
+        INeuralNetwork best = bestNetwork.buildNetwork();
+        printConvergence(NetworkTrainerType.DENetworkTrainer, best);
+        return best;
     }
 
     /**

@@ -13,6 +13,9 @@ public class MultiLayerPerceptron implements INeuralNetwork {
         this.initializeNetwork(networkDimensions);
     }
 
+    /**
+     * Execute a forward propagation through the network using the supplied array as inputs
+     */
     public double[] execute(double[] inputs) {
         if (inputs.length != this.layers.get(0).getNeuron(0).getWeights().size()) {
             throw new IllegalArgumentException("Input/Network size mismatch!");
@@ -49,15 +52,13 @@ public class MultiLayerPerceptron implements INeuralNetwork {
         this.convergenceTime = convergenceTime;
     }
 
-    @Override
-    public double computeActivation(double input) {
-        return this.activationFunction.compute(input);
-    }
-
     public double computeActivationDerivative(double input) {
         return this.activationFunction.computeDerivative(input);
     }
 
+    /**
+     * Create a new network of the supplied dimensions
+     */
     private void initializeNetwork(int[] networkDimensions) {
         if (networkDimensions == null || networkDimensions.length < 2) {
             throw new IllegalArgumentException("Invalid network configuration!");

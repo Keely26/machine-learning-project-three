@@ -6,7 +6,6 @@ import java.util.Random;
  * Neuron class stores values weights and activations of a single neuron in the network and provides functionality
  * to compute the output of the that neuron.
  */
-@SuppressWarnings("WeakerAccess")
 public class Neuron {
 
     public final int size;

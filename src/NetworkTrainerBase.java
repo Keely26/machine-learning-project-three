@@ -10,23 +10,21 @@ public class NetworkTrainerBase implements INetworkTrainer {
 
     protected int cutoffCounter = 0;
     protected double runningAvg = 0.0;
-    private double startTime;
+    protected double startTime = 0.0;
+
+    protected int bestGeneration = 0;
+    protected double bestError = Double.MAX_VALUE;
+    protected WeightMatrix bestNetwork;
 
     NetworkTrainerBase(int populationSize) {
         this.populationSize = populationSize;
     }
-
 
     @Override
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
         System.out.println("Train should be called an instance of the base, not the base class itself!!");
         System.exit(-1);
         return null;
-    }
-
-    // Take a network and a set of inputs, run them through the network and return the outputs
-    protected double[] execute(INeuralNetwork network, double[] inputs) {
-        return network.execute(inputs);
     }
 
     /**
@@ -50,36 +48,45 @@ public class NetworkTrainerBase implements INetworkTrainer {
         return parents;
     }
 
+    /**
+     * Perform a multi threaded evaluation of each individual in the population by calling evaluate individual foreach.
+     */
     protected void evaluatePopulation(Population population, Dataset trainingData) {
-        population.parallelStream().forEach((WeightMatrix individual) -> {
-            //System.out.println(individual);
-            evaluateIndividual(individual, trainingData);
-        });
+        population.parallelStream().forEach(individual -> NetworkTrainerBase.this.evaluateIndividual(individual, trainingData));
     }
 
-    protected void evaluateIndividual(WeightMatrix individual, Dataset trainingData) {
-        double fitness = trainingData
+    /**
+     * Evaluate the performance of a single individual on a provided dataset.
+     * Using the provided individual, map over the elements of the training set and sum the output errors.
+     * Set the fitness of the individual.
+     */
+    protected void evaluateIndividual(WeightMatrix individual, Dataset trainingSet) {
+        individual.setFitness(trainingSet
                 .parallelStream()
-                .mapToDouble((Sample sample) -> {
-                    INeuralNetwork network = individual.buildNetwork();
-                    double[] networkOutputs = network.execute(sample.inputs);
-                    return meanSquaredError(networkOutputs, sample.outputs);
-                })
-                .sum();
-        individual.setFitness(fitness);
+                .mapToDouble(sample -> meanSquaredError(individual.buildNetwork().execute(sample.inputs), sample.outputs))
+                .sum());
     }
 
+    /**
+     * Evaluate a population according to the provided validation set. Print the error to stdout.
+     */
     protected double validatePopulation(Population population, Dataset validationSet, int generation) {
+        // Calculate the total validation error of the population
         double error = population
                 .parallelStream()
-                .mapToDouble(individual -> validationSet.stream()
-                        .mapToDouble(sample -> meanSquaredError(individual.buildNetwork().execute(sample.inputs), sample.outputs)).sum() / validationSet.size())
+                .mapToDouble(individual -> validationSet
+                        .stream()
+                        .mapToDouble(sample -> meanSquaredError(individual.buildNetwork().execute(sample.inputs), sample.outputs))
+                        .sum() / validationSet.size())
                 .sum();
+        // Print to stdout
         System.out.println("Generation: " + generation + "\t\t" + "Validation set error: " + error / validationSet.size());
         return error;
     }
 
-    // Compute the normalized squared error between a set of outputs and their true values
+    /**
+     * Given the expected and actual outputs, compute the normalized mean squared error of their difference.
+     */
     protected double meanSquaredError(double[] networkOutputs, double[] expectedOutputs) {
         assert networkOutputs.length == expectedOutputs.length;
 
@@ -93,23 +100,37 @@ public class NetworkTrainerBase implements INetworkTrainer {
         return errorSum / (networkOutputs.length * expectedOutputs.length);
     }
 
+    /**
+     * Record the starting time and reset counters.
+     */
     protected void startTimer() {
         this.startTime = System.nanoTime();
+        this.cutoffCounter = 0;
+        this.runningAvg = 9999;
     }
 
     /**
      * Terminate if the average change in performance over the last 5 generations is less than 0.5%
      */
-    protected boolean shouldContinue(double validationError, int generation) {
-        runningAvg = ((runningAvg * 4) + validationError) / 5;
-        if (Math.abs(validationError - runningAvg) / validationError < 0.01) {
+    protected boolean shouldContinue(double validationError, int generation, INeuralNetwork network) {
+        if (validationError < bestError) {
+            bestGeneration = generation;
+            bestError = validationError;
+            bestNetwork = network.constructWeightMatrix();
+        }
+        runningAvg = ((runningAvg * 9) + validationError) / 10;
+        if ((runningAvg - validationError) / validationError < 0.005) {
             cutoffCounter++;
         } else {
             cutoffCounter = 0;
         }
-        return generation < 5000 && cutoffCounter < 7;
+        return generation < 5000 && cutoffCounter < 20;
     }
 
+    /**
+     * Calculates the convergence time of the trainer, setting this value on the network and
+     * printing convergence time to the stdout.
+     */
     protected void printConvergence(NetworkTrainerType type, INeuralNetwork network) {
         double convergenceTime = (System.nanoTime() - startTime) / 1000000000.0;
         network.setConvergence(convergenceTime);

@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Implementation of Differential Evolution for training a neural net
+ *
+ * @author Karen Stengel
+ */
 public class DENetworkTrainer extends NetworkTrainerBase {
 
     private final double beta;
@@ -31,19 +36,20 @@ public class DENetworkTrainer extends NetworkTrainerBase {
                 .collect(Collectors.toCollection(Population::new));
 
         // Split training set into training and validation sets
-        Collections.shuffle(samples);
+        samples.shuffle();
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
         int generation = 0;
-        while (shouldContinue(validatePopulation(population, validationSet, generation), generation)) {
+        // While stopping conditions haven't been reached, create the next generation and increment
+        while (shouldContinue(validatePopulation(population, validationSet, generation), generation, network)) {
             population = createNextGeneration(network, population, trainingSet);
             generation++;
         }
 
-        INeuralNetwork bestNetwork = population.getMostFit().buildNetwork();
-        printConvergence(NetworkTrainerType.DENetworkTrainer, bestNetwork);
-        return bestNetwork;
+        INeuralNetwork best = bestNetwork.buildNetwork();
+        printConvergence(NetworkTrainerType.DENetworkTrainer, best);
+        return best;
     }
 
     /**
@@ -54,11 +60,17 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         List<Double> weights = individual.getWeights();
 
         // Set weights to random value between [-5.0, 5.0]
-        IntStream.range(0, weights.size()).parallel().forEach(i -> weights.set(i, (this.random.nextDouble() * 10) - 5));
+        IntStream.range(0, weights.size())
+                .parallel()
+                .forEach(i -> weights.set(i, (this.random.nextDouble() * 10) - 5));
 
         return individual;
     }
 
+    /**
+     * Loop over the population, generating a child for each individual and adding the stronger of the two to the next
+     * generation.
+     */
     private Population createNextGeneration(INeuralNetwork network, Population population, Dataset trainingSet) {
         Population nextGeneration = new Population();
 
@@ -69,19 +81,20 @@ public class DENetworkTrainer extends NetworkTrainerBase {
             evaluateIndividual(parent, trainingSet);
             evaluateIndividual(child, trainingSet);
 
-            //population.add(child);
-            //  nextGeneration.add(child);
             nextGeneration.add(parent.getFitness() < child.getFitness() ? parent : child);
         }
-//        evaluatePopulation(population, trainingSet);
-//        population.sortByFitness();
-        return nextGeneration;//new Population(new ArrayList<>(population.subList(0, populationSize)));
+        return nextGeneration;
     }
 
+    /**
+     * Given the population and the index of the primary parent, choose three other distinct parents and create a child
+     * target vector according to: target = Xa * B (Xb - Xc).
+     */
     private List<Double> createChild(Population population, int parentIndex) {
         // Remove parentIndex from list
         Collections.swap(indexList, parentIndex, populationSize - 1);
 
+        // Choose a random index from the list, then swap that index out of range so it cant be chosen twice.
         List<WeightMatrix> auxiliaryParents = new ArrayList<>(3);
         for (int i = 2; i < 5; i++) {
             int randomIndex = random.nextInt(populationSize - i);
@@ -93,6 +106,7 @@ public class DENetworkTrainer extends NetworkTrainerBase {
         List<Double> weightsB = auxiliaryParents.get(1).getWeights();
         List<Double> weightsC = auxiliaryParents.get(2).getWeights();
 
+        // Cross the selected individuals
         List<Double> childWeights = new ArrayList<>();
         for (int i = 0; i < weightsA.size(); i++) {
             if (random.nextDouble() < this.crossoverRate) {

@@ -6,6 +6,5 @@ public interface INeuralNetwork {
     double getConvergence();
     void setConvergence(double convergenceTime);
     WeightMatrix constructWeightMatrix();
-    double computeActivation(double input);
     double computeActivationDerivative(double input);
 }

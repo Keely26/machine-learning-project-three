@@ -1,8 +1,11 @@
-
+/**
+ * Factory class for centralizing create of new networks and trainers
+ * The tuning parameters used for each network and trainer are listed below.
+ */
 public class NetworkFactory {
 
     /* MultiLayer Perceptron Parameters */
-    private static final int[] layers = new int[]{11, 15, 1};    // Size of each layer
+    private static final int[] layers = new int[]{8, 15, 1};    // Size of each layer
     private static final IActivationFunction activationFunction = new HyperbolicTangent();
 
     /* Backpropagation Parameters */
@@ -27,7 +30,9 @@ public class NetworkFactory {
     private static final int numParentsGA = 5;
     private static final int numberOffspringGA = 10;
 
-
+    /**
+     * Create a new instance of the specified training using the above tuning parameters
+     */
     public static INetworkTrainer buildNetworkTrainer(NetworkTrainerType type) {
         switch (type) {
             case BPNetworkTrainer:
@@ -43,12 +48,15 @@ public class NetworkFactory {
         }
     }
 
-    // Construct a new network of the requested type
+    /**
+     * Construct a neural network of the specified type using the above tuning parameters
+     */
     public static INeuralNetwork buildNewNetwork(NetworkType type) {
-        if (type == NetworkType.MultiLayerPerceptron) {
-            return new MultiLayerPerceptron(activationFunction, layers);
-        } else {
-            throw new IllegalArgumentException("Invalid network type!");
+        switch (type) {
+            case MultiLayerPerceptron:
+                return new MultiLayerPerceptron(activationFunction, layers);
+            default:
+                throw new IllegalArgumentException("Invalid network type!");
         }
     }
 }

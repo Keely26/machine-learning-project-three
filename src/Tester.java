@@ -2,7 +2,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -12,7 +11,7 @@ import java.util.stream.IntStream;
  */
 public class Tester {
 
-    private static final DatasetType datasetType = DatasetType.Wine;
+    private static final DatasetType datasetType = DatasetType.Yeast;
 
     public static void main(String[] args) {
         setFileOut();
@@ -45,7 +44,7 @@ public class Tester {
         List<Double> BPErrors = new ArrayList<>();
 
         for (int k = 0; k < 5; k++) {
-            Collections.shuffle(dataset);
+            dataset.shuffle();
             Dataset testSet = dataset.getTestingSet();
             Dataset trainSet = dataset.getTrainingSet();
 

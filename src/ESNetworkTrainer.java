@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -32,12 +31,12 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
                 .collect(Collectors.toCollection(Population::new));
 
         // Split training set into training and validation sets
-        Collections.shuffle(samples);
+        samples.shuffle();
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
         int generation = 0;
-        while(shouldContinue(validatePopulation(population, validationSet, generation), generation)) {
+        while (shouldContinue(validatePopulation(population, validationSet, generation), generation, network)) {
             // Perform reproductive step, adding children into population
             generateOffspring(population, generation);
 
@@ -47,9 +46,9 @@ public class ESNetworkTrainer extends NetworkTrainerBase {
         }
 
         // Return the best network
-        INeuralNetwork bestNetwork = population.getMostFit().buildNetwork();
-        printConvergence(NetworkTrainerType.ESNetworkTrainer, bestNetwork);
-        return bestNetwork;
+        INeuralNetwork best = bestNetwork.buildNetwork();
+        printConvergence(NetworkTrainerType.DENetworkTrainer, best);
+        return best;
     }
 
     /**

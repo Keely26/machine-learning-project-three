@@ -8,6 +8,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Fine access handler for .csv datasets
+ * Takes a dataset type and returns a List of examples in Dataset format
+ */
 public class DatasetFactory {
 
     private static final String PATH = "datasets/";

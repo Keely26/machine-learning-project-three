@@ -1,3 +1,5 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -24,6 +26,9 @@ public class WeightMatrix implements Comparable {
     private final int networkSize;
     private final int numInputs;
 
+    /**
+     * Build a new weight matrix using the dimensions and weights of the provided network
+     */
     public WeightMatrix(INeuralNetwork network) {
         this.network = network;
         this.networkSize = network.getSize();
@@ -44,6 +49,9 @@ public class WeightMatrix implements Comparable {
         }
     }
 
+    /**
+     * Build a new weight matrix using the dimensions of the provided network while using a separate set of weights
+     */
     public WeightMatrix(INeuralNetwork network, List<Double> weights) {
         this.network = network;
         this.networkSize = network.getSize();
@@ -133,7 +141,7 @@ public class WeightMatrix implements Comparable {
     }
 
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(@NotNull Object o) {
         return Double.compare(fitness, ((WeightMatrix) o).fitness);
     }
 }

@@ -1,8 +1,13 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * An implementation of standard backpropagation
+ * Supports stochastic weight updates and momentum
+ *
+ * @author Zach Connelly
+ */
 public class BPNetworkTrainer extends NetworkTrainerBase {
 
     private double learningRate;
@@ -24,7 +29,7 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
     public INeuralNetwork train(INeuralNetwork network, Dataset samples) {
         startTimer();
         // Split training set into training and validation sets
-        Collections.shuffle(samples);
+        samples.shuffle();
         Dataset validationSet = new Dataset(samples.subList(0, samples.size() / 10));
         Dataset trainingSet = new Dataset(samples.subList(samples.size() / 10, samples.size()));
 
@@ -32,7 +37,7 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
         while (shouldContinue(validate(network, validationSet, iteration), iteration, network)) {
             for (Sample sample : trainingSet) {
                 // Forward propagate each sample through the network
-                this.execute(network, sample.inputs);
+                network.execute(sample.inputs);
 
                 // Backpropagate the error using the true outputs
                 this.backPropagate(network, sample.outputs);
@@ -50,14 +55,18 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
         return bestNetwork.buildNetwork();
     }
 
+    /**
+     * Determine if learning should be cutoff by evaluating performance against the validation set
+     */
     protected boolean shouldContinue(double validationError, int iteration, INeuralNetwork network) {
         if (validationError < bestError) {
             bestIteration = iteration;
             bestError = validationError;
             bestNetwork = network.constructWeightMatrix();
         }
-        runningAvg = ((runningAvg * 4) + validationError) / 5;
-        if (Math.abs(validationError - runningAvg) / validationError < 0.00001) {
+        runningAvg = ((runningAvg * 9) + validationError) / 10;
+        // Increment counter if the error has seen less than 1/10000 improvement
+        if ((runningAvg - validationError) / validationError < 0.0001) {
             cutoffCounter++;
         } else {
             cutoffCounter = 0;
@@ -103,7 +112,9 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
         }
     }
 
-    // Use the weight deltas calculated by back prop to update the weights of each neuron
+    /**
+     * Use the weight deltas calculated by back prop to update the weights of each neuron
+     */
     private void updateWeights(INeuralNetwork network, double[] networkInputs) {
         double[] inputs;
         for (int i = 0; i < network.getSize(); i++) {
@@ -132,7 +143,9 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
         }
     }
 
-    // Reset all of the weight deltas in the network to zero
+    /**
+     * Reset all of the weight deltas in the network to zero
+     */
     private void resetWeightDeltas(INeuralNetwork network) {
         IntStream.range(0, network.getSize())
                 .forEach(i -> network.getLayer(i)
@@ -140,7 +153,9 @@ public class BPNetworkTrainer extends NetworkTrainerBase {
                         .forEach(neuron -> neuron.setDelta(0.0)));
     }
 
-    // Compute the average error over the validation set and print to console
+    /**
+     * Compute the average error over the validation set and print to console
+     */
     private double validate(INeuralNetwork network, Dataset validationSet, int epoch) {
         double error = validationSet
                 .parallelStream()
