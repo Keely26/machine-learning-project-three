@@ -102,12 +102,12 @@ public class NetworkTrainerBase implements INetworkTrainer {
      */
     protected boolean shouldContinue(double validationError, int generation) {
         runningAvg = ((runningAvg * 4) + validationError) / 5;
-        if (Math.abs(validationError - runningAvg) / validationError < 0.005) {
+        if (Math.abs(validationError - runningAvg) / validationError < 0.01) {
             cutoffCounter++;
         } else {
             cutoffCounter = 0;
         }
-        return generation < 5000 && cutoffCounter < 10;
+        return generation < 5000 && cutoffCounter < 7;
     }
 
     protected void printConvergence(NetworkTrainerType type, INeuralNetwork network) {
